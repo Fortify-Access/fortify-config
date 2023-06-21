@@ -6,7 +6,7 @@ class User(AbstractUser):
     pass
 
 
-class Settings(models.Models):
+class Settings(models.Model):
     pass
 
 
