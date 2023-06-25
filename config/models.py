@@ -7,9 +7,12 @@ class User(AbstractUser):
 
 
 class Settings(models.Model):
-    pass
+    sing_box_binary_path = models.CharField(max_length=364)
 
 
 class Server(models.Model):
     host = models.CharField(max_length=128)
     location = models.CharField(max_length=128)
+
+    def __str__(self):
+        return self.host + f' ({self.location})'

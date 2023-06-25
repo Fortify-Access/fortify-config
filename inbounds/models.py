@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 from . import functions
 
 # Create your models here.
@@ -34,13 +35,12 @@ class Inbound(models.Model):
     def to_dict(self):
         return functions.inbound_to_dict(self)
 
-    class Meta:
-        constraints = (
-            models.CheckConstraint(
-                check=models.Q(type='vless') & models.Q(tls__isnull=False),
-                name="tls_required_for_vless"
-            ),
-        )
+    def clean(self):
+        try:
+            if self.type == 'vless' and not self.tls:
+                raise ValidationError("Tls section can not be empty when vless type is selected!")
+        except Tls.DoesNotExist:
+            raise ValidationError("Tls section can not be empty when vless type is selected!")
 
 
 class Tls(models.Model):
