@@ -4,8 +4,8 @@ from . import functions
 # Create your models here.
 class Inbound(models.Model):
     class Type(models.TextChoices):
-        VMESS = 'vmess', 'Vmess'
-        VLESS = 'vless', 'Vless'
+        VMESS = 'vmess', 'vmess'
+        VLESS = 'vless', 'vless'
 
     class DomainStrategy(models.TextChoices):
         PREFER_IPV4 = 'prefer_ipv4', 'Prefer IPV4'
@@ -17,16 +17,16 @@ class Inbound(models.Model):
     type = models.CharField(max_length=5, choices=Type.choices)
     tag = models.CharField(max_length=64)
     listen = models.CharField(max_length=36, default='::')
-    listen_port = models.IntegerField()
-    tcp_fast_open = models.BooleanField(null=True, blank=True)
-    udp_fragment = models.BooleanField(null=True, blank=True)
-    sniff = models.BooleanField(null=True, blank=True)
-    sniff_override_destination = models.BooleanField(null=True, blank=True)
+    listen_port = models.IntegerField(unique=True)
+    tcp_fast_open = models.BooleanField()
+    udp_fragment = models.BooleanField()
+    sniff = models.BooleanField()
+    sniff_override_destination = models.BooleanField()
     sniff_timeout = models.IntegerField(null=True, blank=True, help_text='ms')
     domain_strategy = models.CharField(max_length=11, choices=DomainStrategy.choices, null=True, blank=True)
     udp_timeout = models.IntegerField(null=True, blank=True)
-    proxy_protocol = models.BooleanField(null=True, blank=True)
-    proxy_protocol_accept_no_header = models.BooleanField(null=True, blank=True)
+    proxy_protocol = models.BooleanField()
+    proxy_protocol_accept_no_header = models.BooleanField()
 
     def __str__(self):
         return self.server.location + ' ' + self.type
@@ -38,7 +38,7 @@ class Inbound(models.Model):
         constraints = (
             models.CheckConstraint(
                 check=models.Q(type='vless') & models.Q(tls__isnull=False),
-                name="check_tls_available_for_vless"
+                name="tls_required_for_vless"
             ),
         )
 
@@ -75,7 +75,7 @@ class Tls(models.Model):
     key_path = models.CharField(max_length=64, null=True, blank=True)
     utls = models.CharField(max_length=10, choices=uTLS.choices, null=True, blank=True)
     handshake_server = models.CharField(max_length=64)
-    handshake_port = models.IntegerField()
+    handshake_port = models.IntegerField(unique=True)
     private_key = models.CharField(max_length=64)
     public_key = models.CharField(max_length=64)
     short_id = models.CharField(max_length=64)
@@ -83,11 +83,8 @@ class Tls(models.Model):
     class Meta:
         constraints = (
             models.CheckConstraint(
-                check=(models.Q(certificate__isnull=False) & models.Q(certificate_path__isnull=True)) |
-                (models.Q(certificate__isnull=True) & models.Q(certificate_path__isnull=False)) |
-                (models.Q(key__isnull=False) & models.Q(key_path__isnull=True)) |
-                (models.Q(key__isnull=True) & models.Q(key_path__isnull=False)),
-                name="check_key_and_certificate"),
+                check=~models.Q(certificate__isnull=False, certificate_path__isnull=False) & ~models.Q(key__isnull=False, key_path__isnull=False),
+                name="validate_key_and_certificate"),
         )
 
 
