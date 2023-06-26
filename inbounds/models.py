@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.exceptions import ValidationError
+from django.utils.crypto import get_random_string
 from . import functions
 
 # Create your models here.
@@ -16,7 +16,7 @@ class Inbound(models.Model):
 
     server = models.ForeignKey('config.Server', models.CASCADE, 'inbounds')
     type = models.CharField(max_length=5, choices=Type.choices)
-    tag = models.CharField(max_length=64)
+    tag = models.CharField(max_length=8, default=get_random_string(8))
     listen = models.CharField(max_length=36, default='::')
     listen_port = models.IntegerField(unique=True)
     tcp_fast_open = models.BooleanField()
@@ -35,12 +35,12 @@ class Inbound(models.Model):
     def to_dict(self):
         return functions.inbound_to_dict(self)
 
-    def clean(self):
-        try:
-            if self.type == 'vless' and not self.tls:
-                raise ValidationError("Tls section can not be empty when vless type is selected!")
-        except Tls.DoesNotExist:
-            raise ValidationError("Tls section can not be empty when vless type is selected!")
+#    def clean(self):
+#        try:
+#            if self.type == 'vless' and not self.tls:
+#                raise ValidationError("Tls section can not be empty when vless type is selected!")
+#        except Tls.DoesNotExist:
+#            raise ValidationError("Tls section can not be empty when vless type is selected!")
 
 
 class Tls(models.Model):
@@ -65,7 +65,6 @@ class Tls(models.Model):
         RANDOMIZED = 'randomized', 'Randomized'
 
     inbound = models.OneToOneField(Inbound, models.CASCADE, related_name='tls')
-    unique_code = models.CharField(max_length=64)
     type = models.CharField(max_length=8, choices=Type.choices)
     server_name = models.CharField(max_length=164)
     min_version = models.CharField(max_length=64, choices=TCPVersion.choices, null=True, blank=True)

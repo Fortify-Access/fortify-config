@@ -44,6 +44,6 @@ def inbound_to_dict(inbound):
         "sniff": inbound.sniff,
         "sniff_override_destination": inbound.sniff_override_destination,
         "domain_strategy": inbound.domain_strategy,
-        "users": [inbound_user_to_dict(user) for user in inbound.users.all()],
+        "users": [],
         "tls": {} if inbound.type not in ['vless'] else tls_to_dict(inbound.tls),
     }
