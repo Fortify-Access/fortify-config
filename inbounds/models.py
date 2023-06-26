@@ -65,6 +65,7 @@ class Tls(models.Model):
         RANDOMIZED = 'randomized', 'Randomized'
 
     inbound = models.OneToOneField(Inbound, models.CASCADE, related_name='tls')
+    unique_code = models.CharField(max_length=64)
     type = models.CharField(max_length=8, choices=Type.choices)
     server_name = models.CharField(max_length=164)
     min_version = models.CharField(max_length=64, choices=TCPVersion.choices, null=True, blank=True)
@@ -95,6 +96,9 @@ class InboundUser(models.Model):
     inbound = models.ForeignKey(Inbound, models.CASCADE, 'users')
     uuid = models.CharField(max_length=64)
     flow = models.CharField(max_length=16, choices=Flow.choices, null=True, blank=True)
+
+    def to_dict(self):
+        return functions.inbound_user_to_dict(self)
 
 
 class TrafficUsage(models.Model):

@@ -27,6 +27,15 @@ class TlsInline(admin.StackedInline):
         return formset
 
 
+class TrafficUsageInline(admin.StackedInline):
+    model = models.TrafficUsage
+
+
 @admin.register(models.Inbound)
 class InboundAdmin(admin.ModelAdmin):
     inlines = (InboundUserInline, TlsInline)
+
+
+@admin.register(models.InboundUser)
+class InboundUserAdmin(admin.ModelAdmin):
+    inlines = (TrafficUsageInline, )
