@@ -32,8 +32,10 @@ def tls_to_dict(tls):
         }
     return tls_data
 
+def inbound_user_to_dict(inbound_user):
+    return {'uuid': inbound_user.uuid, 'flow': inbound_user.flow}
+
 def inbound_to_dict(inbound):
-    users = [{'uuid': user.uuid, 'flow': user.flow} for user in inbound.users.all()]
     return {
         "type": inbound.type,
         "tag": inbound.tag,
@@ -42,6 +44,6 @@ def inbound_to_dict(inbound):
         "sniff": inbound.sniff,
         "sniff_override_destination": inbound.sniff_override_destination,
         "domain_strategy": inbound.domain_strategy,
-        "users": users,
+        "users": [inbound_user_to_dict(user) for user in inbound.users.all()],
         "tls": {} if inbound.type not in ['vless'] else tls_to_dict(inbound.tls),
     }
