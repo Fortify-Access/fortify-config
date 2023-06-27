@@ -88,6 +88,31 @@ class Tls(models.Model):
         )
 
 
+class Transport(models.Model):
+    class Type(models.TextChoices):
+        HTTP = 'http', 'Http'
+        WS = 'ws', 'WebSocket'
+
+    class Method(models.TextChoices):
+        GET = 'GET', 'GET'
+
+    inbound = models.OneToOneField(Inbound, models.CASCADE, related_name='transport')
+    type = models.CharField(max_length=4, choices=Type.choices)
+    path = models.CharField(max_length=64)
+    method = models.CharField(max_length=3, choices=Method.choices, null=True, blank=True)
+
+    def to_dict(self):
+        return functions.transport_to_dict(self)
+
+    class Meta:
+        constraints = (
+            models.CheckConstraint(
+                check=~models.Q(type='ws', method__isnull=False),
+                name="vlidate_transport_type"
+            ),
+        )
+
+
 class InboundUser(models.Model):
     class Flow(models.TextChoices):
         XRV = 'xtls-rprx-vision', 'xtls-rprx-vision'

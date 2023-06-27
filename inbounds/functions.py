@@ -32,6 +32,16 @@ def tls_to_dict(tls):
         }
     return tls_data
 
+def transport_to_dict(transport):
+    transport_dict = {
+        "type": transport.type,
+        "path": transport.path,
+    }
+
+    if transport.method:
+        transport_dict["method"] = transport.method
+    return transport_dict
+
 def inbound_user_to_dict(inbound_user):
     return {'uuid': inbound_user.uuid, 'flow': inbound_user.flow}
 
@@ -45,5 +55,6 @@ def inbound_to_dict(inbound):
         "sniff_override_destination": inbound.sniff_override_destination,
         "domain_strategy": inbound.domain_strategy,
         "users": [],
-        "tls": {} if inbound.type not in ['vless'] else tls_to_dict(inbound.tls),
+        "tls": {} if not hasattr(inbound, 'tls') else tls_to_dict(inbound.tls),
+        "transport": {} if not hasattr(inbound, 'transport') else transport_to_dict(inbound.transport)
     }
