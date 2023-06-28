@@ -61,7 +61,6 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 migrations/
-static/
 
 # Flask stuff:
 instance/
