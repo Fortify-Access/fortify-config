@@ -3,5 +3,4 @@ from . import views
 
 app_name = 'config'
 urlpatterns = [
-        path('', views.dashboard, name="dashboard")
 ]

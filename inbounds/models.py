@@ -41,7 +41,7 @@ class Inbound(models.Model):
     expiration_date = models.DateTimeField(null=True, blank=True)
     creation_date = models.DateTimeField(auto_now_add=True)
 
-    traffic = models.OneToOneField('TrafficUsage', models.CASCADE, related_name='inbound')
+    traffic = models.OneToOneField('Traffic', models.CASCADE, related_name='inbound')
 
     def __str__(self):
         return self.server.location + ' ' + self.type
@@ -119,7 +119,7 @@ class Transport(models.Model):
     class Meta:
         constraints = (
             models.CheckConstraint(
-                check=~models.Q(type='ws', method__isnull=False) & ~models.Q(type='http', hosts_isnull=True),
+                check=~models.Q(type='ws', method__isnull=False) & ~models.Q(type='http', hosts__isnull=True),
                 name="vlidate_transport_type"
             ),
         )
