@@ -38,8 +38,11 @@ def transport_to_dict(transport):
         "path": transport.path,
     }
 
-    if transport.method:
+    if transport.type == 'http' and transport.method:
         transport_dict["method"] = transport.method
+    if transport.type == 'http' and transport.hosts:
+        transport_dict["host"] = [host for host in transport.hosts.split(',')]
+
     return transport_dict
 
 def inbound_user_to_dict(inbound_user):
