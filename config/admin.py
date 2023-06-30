@@ -13,3 +13,7 @@ class ServerAdmin(admin.ModelAdmin):
     list_display = ('host', 'location')
     inlines = (InboundInline,)
 
+
+@admin.register(config_models.User)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('username',)

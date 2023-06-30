@@ -1,0 +1,101 @@
+{% extends "layouts/base.html" %}
+{% load i18n static %}
+
+{% block title %} Inbounds {% endblock title %}
+
+{% block overlay %}
+  <div class="min-height-300 bg-primary position-absolute w-100"></div>
+{% endblock overlay %}
+
+{% block content %}
+  <div class="container-fluid py-4">
+    <a href="/admin/inbounds/inbound/add/" class="btn btn-sm btn-outline-gray-600 btn-success">
+        <i class="fa fa-plus-circle"></i>
+        Add server
+    </a>
+
+    <div class="row">
+      <div class="col-12">
+        <div class="card mb-4">
+          <div class="card-header pb-0">
+            <h6>Inbounds table</h6>
+          </div>
+          <div class="card-body px-0 pt-0 pb-2">
+            <div class="table-responsive p-0">
+              <table class="table align-items-center mb-0">
+                <thead>
+                  <tr>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tag</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Traffic used</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Expiration</th>
+                    <th class="text-secondary opacity-7"></th>
+                  </tr>
+                </thead>
+                <tbody>
+
+                  {% for inbound in inbound_list %}
+                  <tr>
+                    <td>
+                      <div class="d-flex px-2 py-1 align-items-center">
+                        <div>
+                          <i class="ni ni-fat-add text-primary text-lg opacity-10 me-3 mt-2"></i>
+                        </div>
+                        <div class="d-flex flex-column justify-content-center">
+                          <h6 class="mb-0 text-sm">{{ inbound.tag }}</h6>
+                        </div>
+                      </div>
+                    </td>
+
+                    {% if inbound.traffic %}
+                    <td class="align-middle text-center">
+                      <div class="d-flex align-items-center">
+                        <span class="me-2 text-xs font-weight-bold">60%</span>
+                        <div>
+                          <div class="progress">
+                            <div class="progress-bar bg-gradient-info" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    {% else %}
+                    <td class="align-middle text-center">
+                      <div class="d-flex align-items-center">
+                        <span class="text-secondary text-xs font-weight-bold">Unlimited</span>
+                      </div>
+                    </td>
+                    {% endif %}
+
+                    <td class="align-middle text-center text-sm">
+                      {% if inbound.status == 0 %}
+                      <span class="badge badge-sm bg-gradient-danger">Disabled</span>
+                      {% elif inbound.status == 1 %}
+                      <span class="badge badge-sm bg-gradient-success">Enabled</span>
+                      {% elif inbound.status == 2 %}
+                      <span class="badge badge-sm bg-gradient-danger">Expired</span>
+                      {% else %}
+                      <span class="badge badge-sm bg-gradient-warning">Depreted</span>
+                      {% endif %}
+                    </td>
+                    <td class="align-middle text-center">
+                      <span class="text-secondary text-xs font-weight-bold">{% if inbound.expiration_date %}{{ inbound.expiration_date }}{% else %}Unlimited{% endif %}</span>
+                    </td>
+                    <td class="align-middle">
+                      <a href="/admin/inbounds/inbound/{{ inbound.id }}/change/" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit user">
+                        Edit
+                      </a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% include 'includes/footer.html' %}
+  </div>
+{% endblock content %}

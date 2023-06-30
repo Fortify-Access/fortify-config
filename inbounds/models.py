@@ -41,18 +41,16 @@ class Inbound(models.Model):
     expiration_date = models.DateTimeField(null=True, blank=True)
     creation_date = models.DateTimeField(auto_now_add=True)
 
-    traffic = models.OneToOneField('Traffic', models.CASCADE, related_name='inbound')
-
     def __str__(self):
         return self.server.location + ' ' + self.type
 
     def to_dict(self):
         return functions.inbound_to_dict(self)
 
-    def clean(self):
-        if self.type != 'vmess' and not hasattr(self, 'tls'):
-            raise ValidationError(f"Tls section can not be empty when {self.type} type is selected!")
-
+#    def clean(self):
+#        if self.type != 'vmess' and not hasattr(self, 'tls'):
+#            raise ValidationError(f"Tls section can not be empty when {self.type} type is selected!")
+#
 
 class Tls(models.Model):
     class Type(models.TextChoices):
@@ -130,7 +128,6 @@ class InboundUser(models.Model):
         XRV = 'xtls-rprx-vision', 'xtls-rprx-vision'
 
     inbound = models.ForeignKey(Inbound, models.CASCADE, 'users')
-    traffic = models.OneToOneField('Traffic', models.CASCADE, related_name='user')
     uuid = models.CharField(max_length=64, default=functions.get_uuid(), unique=True)
     flow = models.CharField(max_length=16, choices=Flow.choices, null=True, blank=True)
 
@@ -150,6 +147,8 @@ class InboundUser(models.Model):
 
 
 class Traffic(models.Model):
+    inbound = models.OneToOneField(Inbound, models.CASCADE, related_name='traffic', null=True, blank=True)
+    user = models.OneToOneField(InboundUser, models.CASCADE, related_name='traffic', null=True, blank=True)
     allowed_traffic = models.BigIntegerField(null=True, blank=True)
     upload = models.BigIntegerField(default=0)
     download = models.BigIntegerField(default=0)
@@ -157,3 +156,11 @@ class Traffic(models.Model):
     @property
     def used_traffic(self):
         return self.upload + self.download
+
+    class Meta:
+        constraints = (
+            models.CheckConstraint(
+                check=~models.Q(inbound__isnull=True, user__isnull=True) & ~models.Q(inbound__isnull=False, user__isnull=False),
+                name='validate_traffic_parent_model'
+            ),
+        )
