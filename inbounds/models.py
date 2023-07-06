@@ -85,9 +85,9 @@ class Tls(models.Model):
     utls = models.CharField(max_length=10, choices=uTLS.choices, null=True, blank=True)
     handshake_server = models.CharField(max_length=64, default='discord.com')
     handshake_port = models.IntegerField(default=443)
-    private_key = models.CharField(max_length=64, default=functions.get_reality_keypair()[0], unique=True)
-    public_key = models.CharField(max_length=64, default=functions.get_reality_keypair()[1], unique=True)
-    short_id = models.CharField(max_length=64, default=functions.get_short_id(), unique=True)
+    private_key = models.CharField(max_length=64, unique=True)
+    public_key = models.CharField(max_length=64, unique=True)
+    short_id = models.CharField(max_length=64, unique=True)
 
     class Meta:
         constraints = (
@@ -129,7 +129,7 @@ class InboundUser(models.Model):
 
     inbound = models.ForeignKey(Inbound, models.CASCADE, 'users')
     name = models.CharField(max_length=64, null=True, blank=True, default=get_random_string(6))
-    uuid = models.CharField(max_length=64, default=functions.get_uuid(), unique=True)
+    uuid = models.CharField(max_length=64, unique=True)
     flow = models.CharField(max_length=16, choices=Flow.choices, null=True, blank=True)
 
     status = models.PositiveSmallIntegerField(choices=Inbound.Status.choices, default=Inbound.Status.ENABLED)
