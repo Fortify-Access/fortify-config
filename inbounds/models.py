@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.crypto import get_random_string
-from django.forms import ValidationError
+from django.conf import settings
 from . import functions
 
 # Create your models here.
@@ -128,8 +128,13 @@ class InboundUser(models.Model):
         XRV = 'xtls-rprx-vision', 'xtls-rprx-vision'
 
     inbound = models.ForeignKey(Inbound, models.CASCADE, 'users')
+    name = models.CharField(max_length=64, null=True, blank=True, default=get_random_string(6))
     uuid = models.CharField(max_length=64, default=functions.get_uuid(), unique=True)
     flow = models.CharField(max_length=16, choices=Flow.choices, null=True, blank=True)
+
+    status = models.PositiveSmallIntegerField(choices=Inbound.Status.choices, default=Inbound.Status.ENABLED)
+    expiration_date = models.DateTimeField(null=True, blank=True)
+    creation_date = models.DateTimeField(auto_now_add=True)
 
     def to_dict(self):
         return functions.inbound_user_to_dict(self)
@@ -142,8 +147,16 @@ class InboundUser(models.Model):
             return code_pattern + f"security=none&type=http&headerType=none#{self.inbound.tag}"
         if hasattr(self.inbound, 'transport'):
             if self.inbound.transport.type == 'http':
-                return ''
-            return ''
+                return code_pattern
+            else:
+                return code_pattern
+        if hasattr(self.inbound, 'tls'):
+            if self.inbound.tls.type == 'reality':
+                return code_pattern + f"security=reality&sni={self.inbound.tls.server_name}&fp={self.inbound.tls.utls}&pbk={self.inbound.tls.public_key}&sid={self.inbound.tls.short_id}&type=tcp&headerType=none#{self.inbound.tag}"
+
+    @property
+    def connection_qr_code(self):
+        return f'qr_codes/{self.id}.png'
 
 
 class Traffic(models.Model):

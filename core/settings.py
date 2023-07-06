@@ -134,6 +134,9 @@ STATICFILES_DIRS = ('static/',)
 SING_BOX_PATH = BASE_DIR / 'sing-box/sing-box'
 SING_BOX_CONF_PATH = BASE_DIR / 'sing-box/config.json'
 
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media/'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 

@@ -1,5 +1,6 @@
 import subprocess
 from django.conf import settings
+import qrcode
 
 def get_reality_keypair():
     key_pair = subprocess.check_output([settings.SING_BOX_PATH, "generate", "reality-keypair"]).decode('utf-8')
@@ -46,7 +47,7 @@ def transport_to_dict(transport):
     return transport_dict
 
 def inbound_user_to_dict(inbound_user):
-    return {'uuid': inbound_user.uuid, 'flow': inbound_user.flow}
+    return {'name': inbound_user.name, 'uuid': inbound_user.uuid, 'flow': inbound_user.flow}
 
 def inbound_to_dict(inbound):
     return {
@@ -58,6 +59,15 @@ def inbound_to_dict(inbound):
         "sniff_override_destination": inbound.sniff_override_destination,
         "domain_strategy": inbound.domain_strategy,
         "users": [],
-        "tls": {} if not hasattr(inbound, 'tls') else tls_to_dict(inbound.tls),
-        "transport": {} if not hasattr(inbound, 'transport') else transport_to_dict(inbound.transport)
+        "tls": None if not hasattr(inbound, 'tls') else tls_to_dict(inbound.tls),
+        "transport": None if not hasattr(inbound, 'transport') else transport_to_dict(inbound.transport)
     }
+
+def generate_qr_code(data: str, path):
+    print(type(path))
+    qr = qrcode.QRCode(version=1, box_size=10, border=3)
+    qr.add_data(data)
+    qr.make(fit=True)
+    image = qr.make_image(fill_color='#007bff', back_color='#f4f5f7')
+    image.save(path)
+    return path
