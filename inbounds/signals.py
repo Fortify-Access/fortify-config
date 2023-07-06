@@ -6,6 +6,7 @@ import os
 
 from . import models
 from . import functions
+from config import functions as config_funcs
 
 
 @receiver(post_save, sender=models.Inbound)
@@ -21,7 +22,7 @@ def commit_inbound_to_singbox(sender, instance, created, **kwargs):
 
         config_dict = json.dumps(config_dict, indent=2)
         open(settings.SING_BOX_CONF_PATH, 'w').write(config_dict)
-    print("Gooooooooooooh")
+        config_funcs.reload_singbox()
 
 
 @receiver(post_save, sender=models.InboundUser)
@@ -40,3 +41,4 @@ def commit_inbound_user_to_singbox(sender, instance, created, **kwargs):
 
         config_dict = json.dumps(config_dict, indent=2)
         open(settings.SING_BOX_CONF_PATH, 'w').write(config_dict)
+        config_funcs.reload_singbox()
