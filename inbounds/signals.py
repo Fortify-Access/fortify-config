@@ -23,6 +23,7 @@ def commit_inbound_to_singbox(sender, instance, created, **kwargs):
         config_dict = json.dumps(config_dict, indent=2)
         open(settings.SING_BOX_CONF_PATH, 'w').write(config_dict)
         config_funcs.restart_singbox()
+        config_funcs.reload_nginx()
 
 
 @receiver(post_save, sender=models.InboundUser)
@@ -42,6 +43,7 @@ def commit_inbound_user_to_singbox(sender, instance, created, **kwargs):
         config_dict = json.dumps(config_dict, indent=2)
         open(settings.SING_BOX_CONF_PATH, 'w').write(config_dict)
         config_funcs.restart_singbox()
+        config_funcs.reload_nginx()
 
 
 @receiver(post_delete, sender=models.Inbound)
@@ -55,6 +57,7 @@ def delete_inbound_from_singbox(sender, instance, **kwargs):
         config_dict = json.dumps(config_dict, indent=2)
         open(settings.SING_BOX_CONF_PATH, 'w').write(config_dict)
         config_funcs.restart_singbox()
+        config_funcs.reload_nginx()
 
 
 @receiver(post_delete, sender=models.InboundUser)
@@ -69,3 +72,4 @@ def delete_inbound_user_from_singbox(sender, instance, **kwargs):
         config_dict = json.dumps(config_dict, indent=2)
         open(settings.SING_BOX_CONF_PATH, 'w').write(config_dict)
         config_funcs.restart_singbox()
+        config_funcs.reload_nginx()

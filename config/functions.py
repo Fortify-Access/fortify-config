@@ -16,7 +16,6 @@ def reload_nginx():
     nginx_mappings = render_to_string(
         'nginx_templates/mappings_template.conf',
         {'users': inbound_models.InboundUser.objects.all(), 'host': models.Server.objects.get(is_local_server=True)})
-
     with open('services/nginx_mappings.conf', 'w') as config:
         config.write(nginx_mappings)
 
