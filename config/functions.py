@@ -1,12 +1,11 @@
 import subprocess
-from django.conf import settings
 from django.template.loader import render_to_string
 
 from inbounds import models
 
-def reload_singbox():
+def restart_singbox():
     try:
-        subprocess.check_output([settings.SING_BOX_PATH, "run"])
+        subprocess.check_output(["systemctl", "restart", "singbox.service"])
         return True
     except Exception as e:
         print(e)
