@@ -4,6 +4,10 @@
 echo "Step 1: Cloning project and installing requirements..."
 cd /opt
 git clone -b admin_redesign https://github.com/Fortify-Access/fortify-config.git fortify
+git checkout admin_redesign
+
+echo "Step 1.5: Install pre-requests ..."
+apt install python3.10-venv -y
 cd fortify
 python3 -m venv venv
 source venv/bin/activate
