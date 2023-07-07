@@ -3,7 +3,7 @@
 # Step 1: Clone project and install requirements
 echo "Step 1: Cloning project and installing requirements..."
 cd /opt
-git clone https://github.com/Fortify-Access/fortify-config.git fortify
+git clone -b admin_redesign https://github.com/Fortify-Access/fortify-config.git fortify
 cd fortify
 python3 -m venv venv
 source venv/bin/activate
