@@ -10,3 +10,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         from config.models import Server
         Server.objects.create(host=options['ip'], is_local_server=True)
+        self.stdout.write(
+            self.style.SUCCESS('Project successfully initialized.')
+        )
