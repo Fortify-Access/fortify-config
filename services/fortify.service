@@ -1,0 +1,11 @@
+[Unit]
+Description=Fortify Access Panel django service
+
+[Service]
+User=root
+WorkingDirectory=/opt/fortify
+ExecStart=/opt/fortify/venv/bin/python manage.py runserver 0.0.0.0:8000
+
+[Install]
+WantedBy=multi-user.target
+
