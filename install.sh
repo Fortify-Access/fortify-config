@@ -75,6 +75,6 @@ systemctl start sing-box.service
 
 # Step 9: Initialize the project
 echo "Step 9: Initializing the project..."
-python manage.py initialproject ip $(curl -s https://api.ipify.org)
+python manage.py initialproject $(curl -s https://api.ipify.org)
 
 echo "Installation completed successfully."
