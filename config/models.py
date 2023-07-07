@@ -13,6 +13,7 @@ class Settings(models.Model):
 class Server(models.Model):
     host = models.CharField(max_length=128)
     location = models.CharField(max_length=128)
+    is_local_server = models.BooleanField(default=False)
 
     def __str__(self):
         return self.host + f' ({self.location})'

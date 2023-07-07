@@ -12,6 +12,7 @@ class InboundInline(admin.TabularInline):
 class ServerAdmin(admin.ModelAdmin):
     list_display = ('host', 'location')
     inlines = (InboundInline,)
+    readonly_fields = ('is_local_server',)
 
 
 @admin.register(config_models.User)
