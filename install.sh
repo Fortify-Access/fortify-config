@@ -5,13 +5,7 @@ echo "Step 1: Cloning project and installing requirements..."
 cd /opt
 git clone -b admin_redesign https://github.com/Fortify-Access/fortify-config.git fortify
 git checkout admin_redesign
-
-echo "Step 1.5: Install pre-requests ..."
-apt install python3.10-venv -y
 cd fortify
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
 
 # Step 2: Download package based on system architecture
 echo "Step 2: Downloading sing-box..."
@@ -38,9 +32,11 @@ if [[ "$(uname)" == "Linux" ]]; then
   if [[ -x "$(command -v apt)" ]]; then
     apt update
     apt install -y nginx
+    apt install -y python3.10-venv
   elif [[ -x "$(command -v yum)" ]]; then
     yum install -y epel-release
     yum install -y nginx
+    yum install -y python3.10-venv
   else
     echo "Unsupported package manager."
     exit 1
@@ -57,6 +53,9 @@ systemctl restart nginx
 
 # Step 6: Run migrations and create superuser
 echo "Step 6: Running migrations and creating superuser..."
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 python manage.py makemigrations
 python manage.py migrate
 python manage.py createsuperuser
@@ -69,9 +68,9 @@ systemctl start fortify.service
 
 # Step 8: Configure and start sing-box service
 echo "Step 8: Configuring and starting sing-box service..."
-cp /opt/fortify/services/sing-box.service /etc/systemd/system/
-systemctl enable sing-box.service
-systemctl start sing-box.service
+cp /opt/fortify/services/singbox.service /etc/systemd/system/
+systemctl enable singbox.service
+systemctl start singbox.service
 
 # Step 9: Initialize the project
 echo "Step 9: Initializing the project..."
