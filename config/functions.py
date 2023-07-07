@@ -20,8 +20,9 @@ def reload_nginx():
     with open('services/nginx_mappings.conf', 'w') as config:
         config.write(nginx_mappings)
 
-    nginx_upstreams = render_to_string('nginx_templates/upstreams_template.conf',
-        {'users': inbound_models.InboundUser.objects.all()}, 'host': models.Server.objects.get(is_local_server=True)})
+    nginx_upstreams = render_to_string(
+        'nginx_templates/upstreams_template.conf',
+        {'users': inbound_models.InboundUser.objects.all(), 'host': models.Server.objects.get(is_local_server=True)})
     with open('services/nginx_upstreams.conf', 'w') as config:
         config.write(nginx_upstreams)
 
