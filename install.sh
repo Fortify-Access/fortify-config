@@ -56,7 +56,7 @@ install_nginx() {
       apt install -y nginx
     elif [[ -x "$(command -v yum)" ]]; then
       yum install -y epel-release
-      yum install -y nginx
+      yum install -y nginx-extras
     else
       echo "Unsupported package manager."
       exit 1

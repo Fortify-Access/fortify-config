@@ -24,6 +24,7 @@ def commit_inbound_to_singbox(sender, instance, created, **kwargs):
         open(settings.SING_BOX_CONF_PATH, 'w').write(config_dict)
         if hasattr(instance.server, 'dns'):
             functions.generate_subdomain_in_cf(instance.tag, instance.server.dns)
+
         config_funcs.restart_singbox()
         config_funcs.reload_nginx()
 
