@@ -17,3 +17,10 @@ class Server(models.Model):
 
     def __str__(self):
         return self.host + f' ({self.location})'
+
+
+class CloudFlareDNS(models.Model):
+    server = models.OneToOneField(Server, models.PROTECT, related_name='dns')
+    zone_id = models.CharField(max_length=128)
+    token = models.CharField(max_length=128)
+    original_domain = models.CharField(max_length=64)

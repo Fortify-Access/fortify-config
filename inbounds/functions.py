@@ -1,6 +1,7 @@
 import subprocess
 from django.conf import settings
 import qrcode
+import requests
 
 def get_reality_keypair():
     key_pair = subprocess.check_output([settings.SING_BOX_PATH, "generate", "reality-keypair"]).decode('utf-8')
@@ -71,3 +72,22 @@ def generate_qr_code(data: str, path):
     image = qr.make_image(fill_color='#007bff', back_color='#f4f5f7')
     image.save(path)
     return path
+
+def generate_subdomain_in_cf(subdomain: str, cf):
+    payload = {
+        "content": cf.original_domain, "name": f"{subdomain}.{cf.original_domain}",
+        "proxied": False, "type": "CNAME",
+        "comment": f"Inbound subdomain for {cf.server.host}-{subdomain}", "ttl": 3600
+    }
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {cf.token}"
+    }
+    response = requests.request("POST",
+        f'https://api.cloudflare.com/client/v4/zones/{cf.zone_id}/dns_records',
+        json=payload, headers=headers)
+
+    if response.json()['success']:
+        return True
+    return False
+
