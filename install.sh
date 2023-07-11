@@ -53,7 +53,7 @@ install_nginx() {
   if [[ "$(uname)" == "Linux" ]]; then
     if [[ -x "$(command -v apt)" ]]; then
       apt update
-      apt install -y nginx
+      apt install -y nginx-extras
     elif [[ -x "$(command -v yum)" ]]; then
       yum install -y epel-release
       yum install -y nginx-extras
