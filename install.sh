@@ -85,7 +85,8 @@ if [[ "$1" == "nginx-enable" ]]; then
   read -p "Enter your cloudflare zone id: " cz
   read -p "Enter your cloudflare authentication token: " ct
   read -p "Enter your parent domain: " domain
-  python manage.py initialproject --ip $(curl -s https://api.ipify.org) -cz "$cz" -ct "$ct" --domain "$domain"
+  read -p "Enter your incoming port: " port
+  python manage.py initialproject --ip $(curl -s https://api.ipify.org) -cz "$cz" -ct "$ct" --domain "$domain" -p "$port"
 else
   python manage.py initialproject --ip $(curl -s https://api.ipify.org)
 fi
