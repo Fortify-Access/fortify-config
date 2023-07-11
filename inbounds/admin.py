@@ -5,6 +5,7 @@ from . import functions
 # Register your models here.
 class InboundUserInline(admin.TabularInline):
     model = models.InboundUser
+    extra = 1
 
     def get_formset(self, request, obj=None, **kwargs):
         formset = super(InboundUserInline, self).get_formset(request, obj, **kwargs)
@@ -26,6 +27,7 @@ class TlsInline(admin.StackedInline):
 
 class TransportInline(admin.StackedInline):
     model = models.Transport
+    extra = 0
 
 
 @admin.register(models.Inbound)

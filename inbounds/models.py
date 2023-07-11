@@ -46,10 +46,11 @@ class Inbound(models.Model):
     def to_dict(self):
         return functions.inbound_to_dict(self)
 
-#    def clean(self):
-#        if self.type != 'vmess' and not hasattr(self, 'tls'):
-#            raise ValidationError(f"Tls section can not be empty when {self.type} type is selected!")
-#
+    def clean(self):
+        super().clean()
+        if self.type != 'vmess' and not hasattr(self, 'tls'):
+            raise models.ValidationError(f"Tls section can not be empty when {self.type} type is selected!")
+
 
 class Tls(models.Model):
     class Type(models.TextChoices):

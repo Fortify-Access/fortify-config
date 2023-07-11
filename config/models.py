@@ -6,17 +6,19 @@ class User(AbstractUser):
     pass
 
 
-class Settings(models.Model):
-    sing_box_binary_path = models.CharField(max_length=364)
-
-
 class Server(models.Model):
     host = models.CharField(max_length=128)
     location = models.CharField(max_length=128)
     is_local_server = models.BooleanField(default=False)
+    incoming_port = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.host + f' ({self.location})'
+
+    def clean(self):
+        super().clean()
+        if hasattr(self, 'dns') and not self.incoming_port:
+            raise models.ValidationError("Incoming port can be empty when server has a cloudflare dns!")
 
 
 class CloudFlareDNS(models.Model):
