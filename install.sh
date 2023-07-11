@@ -44,6 +44,23 @@ install_project() {
   systemctl enable singbox.service
   systemctl start singbox.service
 
+  # Step 9: Downlaod and extract sing-box binary
+  echo "Step 9: Downloading sing-box..."
+  if [[ "$(uname -m)" == "x86_64" ]]; then
+      package_url="https://github.com/SagerNet/sing-box/releases/download/v1.3.0/sing-box-1.3.0-linux-amd64.tar.gz"
+  elif [[ "$(uname -m)" == "aarch64" ]]; then
+      package_url="https://github.com/SagerNet/sing-box/releases/download/v1.3.0/sing-box-1.3.0-linux-arm64.tar.gz"
+  else
+      echo "Unsupported system architecture."
+      exit 1
+  fi
+
+  wget "$package_url" -P /opt/fortify
+  package_file=$(basename "$package_url")
+
+  tar xf "/opt/fortify/$package_file" -C /opt/fortify/sing-box
+  rm "/opt/fortify/$package_file"
+
 }
 
 # Function to install Nginx and configure services
