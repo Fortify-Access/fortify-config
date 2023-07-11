@@ -79,15 +79,27 @@ def generate_subdomain_in_cf(subdomain: str, cf):
         "proxied": False, "type": "CNAME",
         "comment": f"Inbound subdomain for {cf.server.host}-{subdomain}", "ttl": 3600
     }
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {cf.token}"
-    }
+    headers = { "Content-Type": "application/json", "Authorization": f"Bearer {cf.token}" }
+
     response = requests.request("POST",
         f'https://api.cloudflare.com/client/v4/zones/{cf.zone_id}/dns_records',
         json=payload, headers=headers)
+    response = response.json()
 
-    if response.json()['success']:
-        return True
-    return False
+    if response['success']:
+        return response['result']['id'], None
 
+    return None, ' - '.join(response['errors'])
+
+def delete_subdomain_from_cf(subdomain_id: str, cf):
+    headers = { "Content-Type": "application/json", "Authorization": f"Bearer {cf.token}" }
+
+    response = requests.request("DELETE",
+        f'https://api.cloudflare.com/client/v4/zones/{cf.zone_id}/dns_records/{subdomain_id}',
+        headers=headers)
+    response = response.json()
+
+    if response['success']:
+        return True, None
+
+    return False, ' - '.join(response['errors'])

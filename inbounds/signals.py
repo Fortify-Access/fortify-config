@@ -7,10 +7,21 @@ import os
 from . import models
 from . import functions
 from config import functions as config_funcs
+from config.models import Log
 
 
 @receiver(post_save, sender=models.Inbound)
 def commit_inbound_to_singbox(sender, instance, created, **kwargs):
+    if hasattr(instance.server, 'dns') and created:
+        subdoamin_id, log_message = functions.generate_subdomain_in_cf(instance.tag, instance.server.dns)
+        if not subdoamin_id:
+            instance.status = models.Inbound.Status.ERROR
+            instance.save()
+            Log.objects.create(inbound=instance, status=Log.Type.ERROR, log_message=log_message)
+            return
+        instance.subdoamin_id = subdoamin_id
+        instance.save()
+
     with open(settings.SING_BOX_CONF_PATH, 'r') as config:
         config_dict = json.loads(config.read())
         if created:
@@ -22,9 +33,6 @@ def commit_inbound_to_singbox(sender, instance, created, **kwargs):
 
         config_dict = json.dumps(config_dict, indent=2)
         open(settings.SING_BOX_CONF_PATH, 'w').write(config_dict)
-        if hasattr(instance.server, 'dns'):
-            functions.generate_subdomain_in_cf(instance.tag, instance.server.dns)
-
         config_funcs.restart_singbox()
         config_funcs.reload_nginx()
 
@@ -51,6 +59,14 @@ def commit_inbound_user_to_singbox(sender, instance, created, **kwargs):
 
 @receiver(post_delete, sender=models.Inbound)
 def delete_inbound_from_singbox(sender, instance, **kwargs):
+    if hasattr(instance.server, 'dns'):
+        status, log_message = functions.delete_subdomain_from_cf(instance.subdoamin_id, instance.server.dns)
+        if not status:
+            instance.status = models.Inbound.Status.ERROR
+            instance.save()
+            Log.objects.create(inbound=instance, type=Log.Type.ERROR, log_message=log_message)
+            return
+
     with open(settings.SING_BOX_CONF_PATH, 'r') as config:
         config_dict = json.loads(config.read())
         for index, inbound in enumerate(config_dict['inbounds']):

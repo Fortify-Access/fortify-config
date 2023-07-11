@@ -19,6 +19,7 @@ class Inbound(models.Model):
         ENABLED = 1, 'Enabled'
         EXPIRED = 2, 'Expired'
         DEPRETED = 3, 'Depreted'
+        ERROR = 4, 'Error'
 
     server = models.ForeignKey('config.Server', models.CASCADE, 'inbounds')
     type = models.CharField(max_length=5, choices=Type.choices)
@@ -40,6 +41,8 @@ class Inbound(models.Model):
     expiration_date = models.DateTimeField(null=True, blank=True)
     creation_date = models.DateTimeField(auto_now_add=True)
 
+    subdomain_id = models.CharField(max_length=32, null=True, blank=True)
+
     def __str__(self):
         return self.server.location + ' ' + self.type
 
@@ -50,6 +53,8 @@ class Inbound(models.Model):
         super().clean()
         if self.type != 'vmess' and not hasattr(self, 'tls'):
             raise models.ValidationError(f"Tls section can not be empty when {self.type} type is selected!")
+        if not hasattr(self.server, 'dns') and self.subdomain_id:
+            raise models.ValidationError("Sub domain cant be filled when the inbound server has not any CF dns!")
 
 
 class Tls(models.Model):
