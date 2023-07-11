@@ -84,6 +84,19 @@ install_project() {
   rm -r "/opt/fortify/${package_name}.tar.gz"
 }
 
+check_cloudflare_details_validation() {
+  response=$(curl -X GET "https://api.cloudflare.com/client/v4/user/tokens/verify" \
+     -H "Authorization: Bearer $1" \
+     -H "Content-Type:application/json")
+  # Check if the status key is true
+  status=$(echo "$response" | jq -r '.status')
+  if [[ "$status" == "true" ]]; then
+    return "true"
+  else
+    return "false"
+  fi
+}
+
 # Function to install Nginx and configure services
 install_nginx() {
   # Step 4: Install Nginx
@@ -120,11 +133,17 @@ echo "Step 9: Initializing the project..."
 # Check arguments to determine which function to execute
 if [[ "$1" == "nginx-enable" ]]; then
   install_nginx
-  read -p "Enter your cloudflare zone id: " cz
-  read -p "Enter your cloudflare authentication token: " ct
-  read -p "Enter your parent domain: " domain
-  read -p "Enter your incoming port: " port
-  python manage.py initialproject --ip $(curl -s https://api.ipify.org) -cz "$cz" -ct "$ct" --domain "$domain" -p "$port"
+  while true
+    do
+      read -p "Enter your cloudflare zone id: " cz
+      read -p "Enter your cloudflare authentication token: " ct
+      read -p "Enter your parent domain: " domain
+      token_validation=$(check_cloudflare_details_validation "$ct")
+      if [[ "$token_validation" == "true" ]]; then
+        break
+      fi
+    done
+  python manage.py initialproject --ip $(curl -s https://api.ipify.org) -cz "$cz" -ct "$ct" --domain "$domain"
 else
   python manage.py initialproject --ip $(curl -s https://api.ipify.org)
 fi
