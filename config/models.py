@@ -26,3 +26,18 @@ class CloudFlareDNS(models.Model):
     zone_id = models.CharField(max_length=128)
     token = models.CharField(max_length=128)
     original_domain = models.CharField(max_length=64)
+
+
+class Log(models.Model):
+    class Type(models.IntegerChoices):
+        WARNING = 0, 'Warning'
+        ERROR = 1, 'Error'
+
+    inbound = models.ForeignKey('inbounds.Inbound', models.CASCADE, 'logs', null=True, blank=True)
+    server = models.ForeignKey(Server, models.CASCADE, 'logs', null=True, blank=True)
+    inbound_user = models.ForeignKey('inbounds.InboundUser', models.CASCADE, 'logs', null=True, blank=True)
+    cloudflare_dns = models.ForeignKey(CloudFlareDNS, models.CASCADE, 'logs', null=True, blank=True)
+
+    type = models.PositiveSmallIntegerField(choices=Type.choices)
+    solved = models.BooleanField(default=False)
+    log_message = models.TextField()
