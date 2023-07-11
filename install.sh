@@ -22,7 +22,7 @@ install_project() {
     exit 1
   fi
 
-  python3 -m venv env
+  python3 -m venv venv
   source env/bin/activate
   pip install -r requirements.txt
 
@@ -55,12 +55,33 @@ install_project() {
       exit 1
   fi
 
-  wget "$package_url" -P /opt/fortify
-  package_file=$(basename "$package_url")
-
-  tar xf "/opt/fortify/$package_file" -C /opt/fortify/sing-box
-  rm "/opt/fortify/$package_file"
-
+  # Fetch the latest (including pre-releases) release version number from GitHub API
+  latest_version=$(curl -s "https://api.github.com/repos/SagerNet/sing-box/releases" | jq -r '.[0].name')
+  
+  # Detect server architecture
+  arch=$(uname -m)
+  
+  # Map architecture names
+  case ${arch} in
+      x86_64)
+          arch="amd64"
+          ;;
+      aarch64)
+          arch="arm64"
+          ;;
+      armv7l)
+          arch="armv7"
+          ;;
+  esac
+  
+  # Prepare package names
+  package_name="sing-box-${latest_version}-linux-${arch}"
+  # Download the latest release package (.tar.gz) from GitHub
+  curl -sLo "/opt/fortify/${package_name}.tar.gz" "https://github.com/SagerNet/sing-box/releases/download/v${latest_version}/${package_name}.tar.gz"
+  # Extract the package and move the binary to /root
+  tar -xzf "/opt/fortify/${package_name}.tar.gz" -C /opt/fortify/
+  # Cleanup the package
+  rm -r "/opt/fortify/${package_name}.tar.gz"
 }
 
 # Function to install Nginx and configure services
