@@ -85,13 +85,12 @@ install_project() {
   # Cleanup the package
   rm -r "/opt/fortify/${package_name}.tar.gz"
   # Copy the default sing-box configuration file
-  cp /opt/fortify/services/default_config.json /opt/fortify/sing-box/config.json
+  cp /opt/fortify/services/default_config.json /opt/fortify/sing-box/
+  mv /opt/fortify/services/default_config.json /opt/fortify/sing-box/config.json
 }
 
 check_cloudflare_details_validation() {
-  response=$(curl -X GET "https://api.cloudflare.com/client/v4/user/tokens/verify" \
-     -H "Authorization: Bearer $1" \
-     -H "Content-Type:application/json")
+  response=$(curl -X GET "https://api.cloudflare.com/client/v4/user/tokens/verify" -H "Authorization: Bearer $1" -H "Content-Type:application/json")
   # Check if the status key is true
   status=$(echo "$response" | jq -r '.status')
   if [[ "$status" == "true" ]]; then
@@ -142,7 +141,7 @@ if [[ "$1" == "nginx-enable" ]]; then
       read -p "Enter your cloudflare zone id: " cz
       read -p "Enter your cloudflare authentication token: " ct
       read -p "Enter your parent domain: " domain
-      token_validation=$(check_cloudflare_details_validation "$ct")
+      token_validation=$(check_cloudflare_details_validation $ct)
       if [[ "$token_validation" == "true" ]]; then
         break
       fi
