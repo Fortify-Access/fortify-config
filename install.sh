@@ -97,11 +97,6 @@ check_cloudflare_details_validation() {
   # Check if the status key is true
   status=$(echo "$response" | jq -r '.success')
   echo "$status"
-  if [[ "$status" == "true" ]]; then
-      echo true
-  else
-      echo false
-  fi
 }
 
 # Function to install Nginx and configure services
@@ -145,8 +140,8 @@ if [[ "$1" == "nginx-enable" ]]; then
       read -p "Enter your cloudflare zone id: " cz
       read -p "Enter your cloudflare authentication token: " ct
       read -p "Enter your parent domain: " domain
-      token_validation=$(check_cloudflare_details_validation "$ct")
-      if [[ "$token_validation" == true ]]; then
+      token_validation=$(check_cloudflare_details_validation $ct)
+      if [[ $token_validation == true ]]; then
         echo "Cloud Flare token validation was successfully!"
         break
       else
