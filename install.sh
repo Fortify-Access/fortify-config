@@ -25,7 +25,7 @@ install_project() {
   fi
 
   python3 -m venv venv
-  source env/bin/activate
+  source venv/bin/activate
   pip install -r requirements.txt
 
   # Step 6: Run migrations and create superuser
