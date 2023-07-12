@@ -14,12 +14,16 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         from config.models import Server, CloudFlareDNS
 
-        if options.get('cloudflare-zoneid', None):
-            if options.get('cloudflare-token', None) and options.get('domain', None) and options.get('port', None):
-                server = Server.objects.create(host=options['ip'], is_local_server=True)
+        if Server.objects.filter(is_local_server=True).exists():
+            self.stdout.write(self.style.ERROR("This project already initialized!"))
+            return
+
+        if options.get('cloudflare_zoneid', None):
+            if options.get('cloudflare_token', None) and options.get('domain', None) and options.get('port', None):
+                server = Server.objects.create(host=options['ip'], is_local_server=True, incoming_port=options['port'])
                 CloudFlareDNS.objects.create(
-                    server=server, zone_id=options['cloudflare-zoneid'],
-                    token=options['cloudflare-token'], original_domain=options['domain'], incoming_port=options['port']
+                    server=server, zone_id=options['cloudflare_zoneid'],
+                    token=options['cloudflare_token'], original_domain=options['domain']
                 )
                 return
             self.stdout.write(self.style.ERROR('All --cloudflare-token, --domain and --port should be passed!'))

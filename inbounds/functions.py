@@ -89,7 +89,7 @@ def generate_subdomain_in_cf(subdomain: str, cf):
     if response['success']:
         return response['result']['id'], None
 
-    return None, ' - '.join(response['errors'])
+    return None, '\n'.join([f"{key} - {value}" for key, value in response['errors'].items()])
 
 def delete_subdomain_from_cf(subdomain_id: str, cf):
     headers = { "Content-Type": "application/json", "Authorization": f"Bearer {cf.token}" }
@@ -102,4 +102,4 @@ def delete_subdomain_from_cf(subdomain_id: str, cf):
     if response['success']:
         return True, None
 
-    return False, ' - '.join(response['errors'])
+    return False, '\n'.join([f"{key} - {value}" for key, value in response['errors'].items()])

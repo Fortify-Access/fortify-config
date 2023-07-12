@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.crypto import get_random_string
+from django.core.exceptions import ValidationError
 from . import functions
 
 # Create your models here.
@@ -51,10 +52,8 @@ class Inbound(models.Model):
 
     def clean(self):
         super().clean()
-        if self.type != 'vmess' and not hasattr(self, 'tls'):
-            raise models.ValidationError(f"Tls section can not be empty when {self.type} type is selected!")
         if not hasattr(self.server, 'dns') and self.subdomain_id:
-            raise models.ValidationError("Sub domain cant be filled when the inbound server has not any CF dns!")
+            raise ValidationError("Sub domain cant be filled when the inbound server has not any CF dns!")
 
 
 class Tls(models.Model):

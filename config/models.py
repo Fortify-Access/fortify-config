@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 class User(AbstractUser):
@@ -7,10 +8,15 @@ class User(AbstractUser):
 
 
 class Server(models.Model):
+    class Status(models.IntegerChoices):
+        ERROR = 0, 'Error'
+        ONLINE = 1, 'Online'
+
     host = models.CharField(max_length=128)
     location = models.CharField(max_length=128)
     is_local_server = models.BooleanField(default=False)
     incoming_port = models.IntegerField(null=True, blank=True)
+    status = models.PositiveSmallIntegerField(choices=Status.choices, default=Status.ONLINE)
 
     def __str__(self):
         return self.host + f' ({self.location})'
@@ -18,7 +24,7 @@ class Server(models.Model):
     def clean(self):
         super().clean()
         if hasattr(self, 'dns') and not self.incoming_port:
-            raise models.ValidationError("Incoming port can be empty when server has a cloudflare dns!")
+            raise ValidationError("Incoming port can be empty when server has a cloudflare dns!")
 
 
 class CloudFlareDNS(models.Model):

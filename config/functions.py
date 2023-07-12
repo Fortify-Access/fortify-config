@@ -1,8 +1,9 @@
 import subprocess
 from django.template.loader import render_to_string
-
+import requests
 from inbounds import models as inbound_models
 from . import models
+
 
 def restart_singbox():
     try:
@@ -26,3 +27,21 @@ def reload_nginx():
         config.write(nginx_upstreams)
 
     subprocess.run(['nginx', '-s', 'reload'])
+
+def create_aaaa_dns_record(ip: str, cf):
+    payload = {
+        "content": ip, "name": f"{cf.original_domain}",
+        "proxied": False, "type": "AAAA",
+        "comment": f"Record for {ip}", "ttl": 3600
+    }
+    headers = { "Content-Type": "application/json", "Authorization": f"Bearer {cf.token}" }
+
+    response = requests.request("POST",
+        f'https://api.cloudflare.com/client/v4/zones/{cf.zone_id}/dns_records',
+        json=payload, headers=headers)
+    response = response.json()
+
+    if response['success']:
+        return True, None
+
+    return False, '\n'.join([f"{key} - {value}" for key, value in response['errors'].items()])
