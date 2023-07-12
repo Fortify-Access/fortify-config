@@ -1,0 +1,18 @@
+{
+  "log": {
+    "level": "info",
+    "timestamp": true
+    "output": "/opt/fortify/sing-box/"
+  },
+  "inbounds": [],
+  "outbounds": [
+    {
+      "type": "direct",
+      "tag": "direct"
+    },
+    {
+      "type": "block",
+      "tag": "block"
+    }
+  ]
+}

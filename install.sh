@@ -11,8 +11,10 @@ install_project() {
   if [[ "$(uname)" == "Linux" ]]; then
     if [[ -x "$(command -v apt)" ]]; then
       apt install -y python3.10-venv
+      apt install -y jq
     elif [[ -x "$(command -v yum)" ]]; then
       yum install -y python3.10-venv
+      yum install -y jq
     else
       echo "Unsupported package manager."
       exit 1
@@ -82,6 +84,8 @@ install_project() {
   tar -xzf "/opt/fortify/${package_name}.tar.gz" -C /opt/fortify/
   # Cleanup the package
   rm -r "/opt/fortify/${package_name}.tar.gz"
+  # Copy the default sing-box configuration file
+  cp /opt/fortify/services/default_config.json /opt/fortify/sing-box/config.json
 }
 
 check_cloudflare_details_validation() {
@@ -105,11 +109,9 @@ install_nginx() {
     if [[ -x "$(command -v apt)" ]]; then
       apt update
       apt install -y nginx
-      apt install -y jq
     elif [[ -x "$(command -v yum)" ]]; then
       yum install -y epel-release
       yum install -y nginx
-      yum install -y jq
     else
       echo "Unsupported package manager."
       exit 1
