@@ -130,6 +130,7 @@ install_nginx() {
 
 # Step 9: Initialize the project
 install_project
+server_ip=$(curl -s https://api.ipify.org)
 echo "Step 9: Initializing the project..."
 
 # Check arguments to determine which function to execute
@@ -139,18 +140,23 @@ if [[ "$1" == "nginx-enable" ]]; then
     do
       read -p "Enter your cloudflare zone id: " cz
       read -p "Enter your cloudflare authentication token: " ct
-      read -p "Enter your parent domain: " domain
       token_validation=$(check_cloudflare_details_validation $ct)
       if [[ $token_validation == true ]]; then
         echo "Cloud Flare token validation was successfully!"
+
+        read -p "Enter your parent domain: " domain
+        read -p "Enter your incoming port: " port
+        echo "ALLOWED_HOSTS=$domain" > .env
+
         break
       else
         echo "Your cloud flare token is not valid!"
       fi
     done
-  python manage.py initialproject --ip $(curl -s https://api.ipify.org) -cz "$cz" -ct "$ct" --domain "$domain"
+  python manage.py initialproject --ip "$server_ip" -cz "$cz" -ct "$ct" --domain "$domain"
 else
-  python manage.py initialproject --ip $(curl -s https://api.ipify.org)
+  echo "ALLOWED_HOSTS=$server_ip" > .env
+  python manage.py initialproject --ip "$server_ip"
 fi
 
 echo "Installation completed successfully."
