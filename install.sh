@@ -67,9 +67,11 @@ install_nginx() {
     if [[ -x "$(command -v apt)" ]]; then
       apt update
       apt install -y nginx
+      apt install -y jq
     elif [[ -x "$(command -v yum)" ]]; then
       yum install -y epel-release
       yum install -y nginx
+      yum install -y jq
     else
       echo "Unsupported package manager."
       exit 1
