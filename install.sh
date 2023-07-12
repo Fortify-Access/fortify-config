@@ -81,22 +81,26 @@ install_project() {
   # Download the latest release package (.tar.gz) from GitHub
   curl -sLo "/opt/fortify/${package_name}.tar.gz" "https://github.com/SagerNet/sing-box/releases/download/v${latest_version}/${package_name}.tar.gz"
   # Extract the package and move the binary to /root
-  tar -xzf "/opt/fortify/${package_name}.tar.gz" -C /opt/fortify/
+  tar -xzf "/opt/fortify/${package_name}.tar.gz" -C /opt/fortify
+  # Renaming the sing-box directory
+  mv "/opt/fortify/${package_name}" "/opt/fortify/sing-box"
   # Cleanup the package
   rm -r "/opt/fortify/${package_name}.tar.gz"
   # Copy the default sing-box configuration file
-  cp /opt/fortify/services/default_config.json /opt/fortify/sing-box/
-  mv /opt/fortify/services/default_config.json /opt/fortify/sing-box/config.json
+  cp /opt/fortify/services/default_config.json /opt/fortify/sing-box/config.json
 }
 
 check_cloudflare_details_validation() {
-  response=$(curl -X GET "https://api.cloudflare.com/client/v4/user/tokens/verify" -H "Authorization: Bearer $1" -H "Content-Type:application/json")
+  response=$(curl -s -X GET "https://api.cloudflare.com/client/v4/user/tokens/verify" \
+        -H "Authorization: Bearer OA2oOU6dchaqGkKOUKSdPi2vX2-L5tYibSmrzQwU" \
+        -H "Content-Type: application/json")
   # Check if the status key is true
   status=$(echo "$response" | jq -r '.status')
+  echo "$status"
   if [[ "$status" == "true" ]]; then
-    return "true"
+      echo true
   else
-    return "false"
+      echo false
   fi
 }
 
@@ -141,9 +145,12 @@ if [[ "$1" == "nginx-enable" ]]; then
       read -p "Enter your cloudflare zone id: " cz
       read -p "Enter your cloudflare authentication token: " ct
       read -p "Enter your parent domain: " domain
-      token_validation=$(check_cloudflare_details_validation $ct)
-      if [[ "$token_validation" == "true" ]]; then
+      token_validation=$(check_cloudflare_details_validation "$ct")
+      if [[ "$token_validation" == true ]]; then
+        echo "Cloud Flare token validation was successfully!"
         break
+      else
+        echo "Your cloud flare token is not valid!"
       fi
     done
   python manage.py initialproject --ip $(curl -s https://api.ipify.org) -cz "$cz" -ct "$ct" --domain "$domain"
