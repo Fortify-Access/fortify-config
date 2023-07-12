@@ -3,7 +3,6 @@ from django.dispatch import receiver
 from django.conf import settings
 import json
 import os
-
 from . import models
 from . import functions
 from config import functions as config_funcs
