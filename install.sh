@@ -92,10 +92,10 @@ install_project() {
 
 check_cloudflare_details_validation() {
   response=$(curl -s -X GET "https://api.cloudflare.com/client/v4/user/tokens/verify" \
-        -H "Authorization: Bearer OA2oOU6dchaqGkKOUKSdPi2vX2-L5tYibSmrzQwU" \
+        -H "Authorization: Bearer $1" \
         -H "Content-Type: application/json")
   # Check if the status key is true
-  status=$(echo "$response" | jq -r '.status')
+  status=$(echo "$response" | jq -r '.success')
   echo "$status"
   if [[ "$status" == "true" ]]; then
       echo true
