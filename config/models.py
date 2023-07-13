@@ -32,6 +32,7 @@ class CloudFlareDNS(models.Model):
     zone_id = models.CharField(max_length=128)
     token = models.CharField(max_length=128)
     original_domain = models.CharField(max_length=64)
+    original_domain_id = models.CharField(max_length=64)
 
 
 class Log(models.Model):

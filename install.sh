@@ -27,6 +27,7 @@ install_project() {
   python3 -m venv venv
   source venv/bin/activate
   pip install -r requirements.txt
+  mkdir -p /opt/fortify/media/qr_codes/
 
   # Step 6: Run migrations and create superuser
   echo "Step 6: Running migrations and creating superuser..."

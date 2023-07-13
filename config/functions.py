@@ -31,7 +31,7 @@ def reload_nginx():
 def create_aaaa_dns_record(ip: str, cf):
     payload = {
         "content": ip, "name": f"{cf.original_domain}",
-        "proxied": False, "type": "AAAA",
+        "proxied": False, "type": "A",
         "comment": f"Record for {ip}", "ttl": 3600
     }
     headers = { "Content-Type": "application/json", "Authorization": f"Bearer {cf.token}" }
@@ -42,6 +42,6 @@ def create_aaaa_dns_record(ip: str, cf):
     response = response.json()
 
     if response['success']:
-        return True, None
+        return response['result']['id'], None
 
-    return False, '\n'.join([f"{key} - {value}" for key, value in response['errors'].items()])
+    return None, '\n'.join([f"CloudFlare Error: {error['code']} - {error['message']}" for error in response['errors']])
