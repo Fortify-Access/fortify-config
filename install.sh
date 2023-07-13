@@ -156,7 +156,7 @@ if [[ "$1" == "nginx-enable" ]]; then
     done
   python manage.py initialproject --ip "$server_ip" -cz "$cz" -ct "$ct" --domain "$domain" -p "$port"
 else
-  echo "ALLOWED_HOSTS=$server_ip" > .env
+    echo "ALLOWED_HOSTS=$server_ip:8000" > .env
   python manage.py initialproject --ip "$server_ip"
 fi
 

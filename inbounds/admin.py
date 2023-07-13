@@ -33,6 +33,7 @@ class TransportInline(admin.StackedInline):
 @admin.register(models.Inbound)
 class InboundAdmin(admin.ModelAdmin):
     inlines = (InboundUserInline, TlsInline, TransportInline)
+    readonly_fields = ('tag', 'subdomain_id')
 
 
 @admin.register(models.InboundUser)

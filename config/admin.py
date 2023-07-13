@@ -10,6 +10,7 @@ class InboundInline(admin.TabularInline):
 
 class CloudFlareDNSInline(admin.StackedInline):
     model = config_models.CloudFlareDNS
+    readonly_fields = ('original_domain_id', )
     extra = 1
 
 
