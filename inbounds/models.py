@@ -42,8 +42,6 @@ class Inbound(models.Model):
     expiration_date = models.DateTimeField(null=True, blank=True)
     creation_date = models.DateTimeField(auto_now_add=True)
 
-    subdomain_id = models.CharField(max_length=32, null=True, blank=True)
-
     def __str__(self):
         return self.server.location + ' ' + self.type
 
@@ -145,7 +143,9 @@ class InboundUser(models.Model):
 
     @property
     def connection_code(self):
-        code_pattern = f"{self.inbound.type}://{self.uuid}@{self.inbound.server.host}:{self.inbound.listen_port}?encryption=none&flow={self.flow}&" 
+        code_pattern = f"{self.inbound.type}://{self.uuid}@\
+                {self.inbound.server.host if not hasattr(self.inbound.server, 'dns') else self.inbound.tag + '.' + self.inbound.server.dns.original_domain}:\
+                {self.inbound.listen_port if not hasattr(self.inbound.server, 'dns') else 443}?encryption=none&flow={self.flow}&" 
 
         if self.inbound.type == 'vmess':
             return code_pattern + f"security=none&type=http&headerType=none#{self.inbound.tag}"
