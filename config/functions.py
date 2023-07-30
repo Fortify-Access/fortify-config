@@ -28,7 +28,7 @@ def reload_nginx():
 
     subprocess.run(['nginx', '-s', 'reload'])
 
-def create_aaaa_dns_record(ip: str, cf):
+def create_a_dns_record(ip: str, cf):
     payload = {
         "content": ip, "name": f"{cf.original_domain}",
         "proxied": False, "type": "A",
