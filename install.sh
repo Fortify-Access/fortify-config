@@ -11,10 +11,8 @@ install_project() {
   if [[ "$(uname)" == "Linux" ]]; then
     if [[ -x "$(command -v apt)" ]]; then
       apt install -y python3.10-venv
-      apt install -y jq
     elif [[ -x "$(command -v yum)" ]]; then
       yum install -y python3.10-venv
-      yum install -y jq
     else
       echo "Unsupported package manager."
       exit 1
@@ -91,73 +89,13 @@ install_project() {
   cp /opt/fortify/services/default_config.json /opt/fortify/sing-box/config.json
 }
 
-check_cloudflare_details_validation() {
-  response=$(curl -s -X GET "https://api.cloudflare.com/client/v4/user/tokens/verify" \
-        -H "Authorization: Bearer $1" \
-        -H "Content-Type: application/json")
-  # Check if the status key is true
-  status=$(echo "$response" | jq -r '.success')
-  echo "$status"
-}
-
-# Function to install Nginx and configure services
-install_nginx() {
-  # Step 4: Install Nginx
-  echo "Step 4: Installing Nginx..."
-  if [[ "$(uname)" == "Linux" ]]; then
-    if [[ -x "$(command -v apt)" ]]; then
-      apt update
-      apt install -y nginx
-    elif [[ -x "$(command -v yum)" ]]; then
-      yum install -y epel-release
-      yum install -y nginx
-    else
-      echo "Unsupported package manager."
-      exit 1
-    fi
-  else
-    echo "Unsupported operating system."
-    exit 1
-  fi
-
-  # Step 5: Replace Nginx conf file and restart Nginx
-  echo "Step 5: Configuring Nginx..."
-  cp /opt/fortify/services/nginx.conf /etc/nginx/nginx.conf
-  systemctl restart nginx
-
-  echo "Nginx installation and service setup completed successfully."
-}
-
-
 # Step 9: Initialize the project
 install_project
 server_ip=$(curl -s https://api.ipify.org)
 echo "Step 9: Initializing the project..."
 
 # Check arguments to determine which function to execute
-if [[ "$1" == "nginx-enable" ]]; then
-  install_nginx
-  while true
-    do
-      read -p "Enter your cloudflare zone id: " cz
-      read -p "Enter your cloudflare authentication token: " ct
-      token_validation=$(check_cloudflare_details_validation $ct)
-      if [[ $token_validation == true ]]; then
-        echo "Cloud Flare token validation was successfully!"
-
-        read -p "Enter your parent domain: " domain
-        read -p "Enter your incoming port: " port
-        echo "ALLOWED_HOSTS=$domain" > .env
-
-        break
-      else
-        echo "Your cloud flare token is not valid!"
-      fi
-    done
-  python manage.py initialproject --ip "$server_ip" -cz "$cz" -ct "$ct" --domain "$domain" -p "$port"
-else
-    echo "ALLOWED_HOSTS=$server_ip:8000" > .env
-  python manage.py initialproject --ip "$server_ip"
-fi
+echo "ALLOWED_HOSTS=$server_ip:8000" > .env
+python manage.py initialproject --ip "$server_ip"
 
 echo "Installation completed successfully."
