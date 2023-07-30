@@ -60,10 +60,10 @@
                     </td>
 
                     <td class="align-middle text-center text-sm">
-                      {% if inbound.status == 0 %}
-                      <span class="badge badge-sm bg-gradient-success">Active</span>
+                      {% if server.status == 1 %}
+                      <span class="badge badge-sm bg-gradient-success">Online</span>
                       {% else %}
-                      <span class="badge badge-sm bg-gradient-danger">Inactive</span>
+                      <span class="badge badge-sm bg-gradient-danger">Error</span>
                       {% endif %}
                     </td>
 
