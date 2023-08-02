@@ -67,8 +67,8 @@ def inbound_to_dict(inbound):
 
 def inbound_to_json(inbound):
     return {
-        "inbound": model_to_dict(inbound, exclude=('server', 'status')) | {'traffic_limitation': inbound.traffic.allowed_traffic},
-        "users": [model_to_dict(user, fields=('name', 'uuid', 'flow')) for user in inbound.users],
+        "inbound": model_to_dict(inbound, exclude=('id', 'server', 'status')) | {'traffic_limitation': inbound.traffic.allowed_traffic},
+        "users": [model_to_dict(user, fields=('name', 'uuid', 'flow')) for user in inbound.users.all()],
         "tls": None if not hasattr(inbound, 'tls') else model_to_dict(inbound.tls, fields=(
             'type', 'server_name', 'handshake_server', 'handshake_port', 'private_key', 'short_id')),
         # "transport": None if not hasattr(inbound, 'transport') else transport_to_dict(inbound.transport)

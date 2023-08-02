@@ -16,7 +16,7 @@ class Server(models.Model):
     location = models.CharField(max_length=128)
     is_local_server = models.BooleanField(default=False)
     status = models.PositiveSmallIntegerField(choices=Status.choices, default=Status.ONLINE)
-    parent_server = models.ForeignKey('Server', models.CASCADE, 'sub_servers', null=True, blank=True)
+    parent_server = models.ForeignKey('Server', models.CASCADE, 'subservers', null=True, blank=True)
     auth_key = models.CharField(max_length=128)
     api_port = models.IntegerField(default=8000, null=True, blank=True)
     server_domain = models.CharField(max_length=64, null=True, blank=True)

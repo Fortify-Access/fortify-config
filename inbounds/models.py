@@ -1,6 +1,5 @@
 from django.db import models
 from django.utils.crypto import get_random_string
-from django.core.exceptions import ValidationError
 from . import functions
 
 # Create your models here.
@@ -41,17 +40,13 @@ class Inbound(models.Model):
     status = models.PositiveSmallIntegerField(choices=Status.choices, default=Status.ENABLED)
     expiration_date = models.DateTimeField(null=True, blank=True)
     creation_date = models.DateTimeField(auto_now_add=True)
+    ip_limitation = models.PositiveSmallIntegerField(default=2, null=True, blank=True)
 
     def __str__(self):
         return self.server.location + ' ' + self.type
 
     def to_dict(self):
         return functions.inbound_to_dict(self)
-
-    def clean(self):
-        super().clean()
-        if not hasattr(self.server, 'dns') and self.subdomain_id:
-            raise ValidationError("Sub domain cant be filled when the inbound server has not any CF dns!")
 
 
 class Tls(models.Model):
@@ -78,12 +73,12 @@ class Tls(models.Model):
     inbound = models.OneToOneField(Inbound, models.CASCADE, related_name='tls')
     type = models.CharField(max_length=8, choices=Type.choices)
     server_name = models.CharField(max_length=164, default='discord.com')
-    min_version = models.CharField(max_length=64, choices=TCPVersion.choices, null=True, blank=True)
-    max_version = models.CharField(max_length=64, choices=TCPVersion.choices, null=True, blank=True)
-    certificate = models.TextField(null=True, blank=True)
-    certificate_path = models.CharField(max_length=64, null=True, blank=True)
-    key = models.TextField(null=True, blank=True)
-    key_path = models.CharField(max_length=64, null=True, blank=True)
+    # min_version = models.CharField(max_length=64, choices=TCPVersion.choices, null=True, blank=True)
+    # max_version = models.CharField(max_length=64, choices=TCPVersion.choices, null=True, blank=True)
+    # certificate = models.TextField(null=True, blank=True)
+    # certificate_path = models.CharField(max_length=64, null=True, blank=True)
+    # key = models.TextField(null=True, blank=True)
+    # key_path = models.CharField(max_length=64, null=True, blank=True)
     utls = models.CharField(max_length=10, choices=uTLS.choices, null=True, blank=True)
     handshake_server = models.CharField(max_length=64, default='discord.com')
     handshake_port = models.IntegerField(default=443)
@@ -134,26 +129,15 @@ class InboundUser(models.Model):
     uuid = models.CharField(max_length=64, unique=True)
     flow = models.CharField(max_length=16, choices=Flow.choices, null=True, blank=True)
 
-    status = models.PositiveSmallIntegerField(choices=Inbound.Status.choices, default=Inbound.Status.ENABLED)
-    expiration_date = models.DateTimeField(null=True, blank=True)
-    creation_date = models.DateTimeField(auto_now_add=True)
-
     def to_dict(self):
         return functions.inbound_user_to_dict(self)
 
     @property
     def connection_code(self):
-        code_pattern = f"{self.inbound.type}://{self.uuid}@\
-                {self.inbound.server.host if not hasattr(self.inbound.server, 'dns') else self.inbound.tag + '.' + self.inbound.server.dns.original_domain}:\
-                {self.inbound.listen_port if not hasattr(self.inbound.server, 'dns') else 443}?encryption=none&flow={self.flow}&" 
+        code_pattern = f"{self.inbound.type}://{self.uuid}@\{self.inbound.server.server_domain or self.server.host}:\{self.inbound.listen_port}?encryption=none&flow={self.flow}&" 
 
         if self.inbound.type == 'vmess':
             return code_pattern + f"security=none&type=http&headerType=none#{self.inbound.tag}"
-        if hasattr(self.inbound, 'transport'):
-            if self.inbound.transport.type == 'http':
-                return code_pattern
-            else:
-                return code_pattern
         if hasattr(self.inbound, 'tls'):
             if self.inbound.tls.type == 'reality':
                 return code_pattern + f"security=reality&sni={self.inbound.tls.server_name}&fp={self.inbound.tls.utls}&pbk={self.inbound.tls.public_key}&sid={self.inbound.tls.short_id}&type=tcp&headerType=none#{self.inbound.tag}"
@@ -165,14 +149,10 @@ class InboundUser(models.Model):
 
 class Traffic(models.Model):
     inbound = models.OneToOneField(Inbound, models.CASCADE, related_name='traffic', null=True, blank=True)
-    user = models.OneToOneField(InboundUser, models.CASCADE, related_name='traffic', null=True, blank=True)
     allowed_traffic = models.BigIntegerField(null=True, blank=True)
-    upload = models.BigIntegerField(default=0)
+    traffic_usage = models.BigIntegerField(default=0)
     download = models.BigIntegerField(default=0)
-
-    @property
-    def used_traffic(self):
-        return self.upload + self.download
+    upload = models.BigIntegerField(default=0)
 
     class Meta:
         constraints = (
@@ -181,3 +161,8 @@ class Traffic(models.Model):
                 name='validate_traffic_parent_model'
             ),
         )
+
+class ConnectionLog(models.Model):
+    inbound = models.ForeignKey(Inbound, models.CASCADE, 'connections')
+    ip = models.CharField(max_length=12)
+    is_online = models.BooleanField(default=True)

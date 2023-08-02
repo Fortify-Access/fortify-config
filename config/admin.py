@@ -8,16 +8,10 @@ class InboundInline(admin.TabularInline):
     extra = 1
 
 
-class CloudFlareDNSInline(admin.StackedInline):
-    model = config_models.CloudFlareDNS
-    readonly_fields = ('original_domain_id', )
-    extra = 1
-
-
 @admin.register(config_models.Server)
 class ServerAdmin(admin.ModelAdmin):
     list_display = ('host', 'location')
-    inlines = (InboundInline, CloudFlareDNSInline)
+    inlines = (InboundInline, )
     readonly_fields = ('is_local_server',)
 
 

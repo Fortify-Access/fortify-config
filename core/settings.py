@@ -35,13 +35,14 @@ ALLOWED_HOSTS = [config('ALLOWED_HOSTS', '*')]
 # Application definition
 
 INSTALLED_APPS = [
-    'admin_argon.apps.AdminArgonConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # third-party
+    'django_celery_beat',
     # apps
     'config',
     'inbounds',
@@ -141,3 +142,6 @@ MEDIA_ROOT = BASE_DIR / 'media/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Celery settings
+CELERY_BROKER_URL = 'redis://localhost:6379/0'

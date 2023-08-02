@@ -25,6 +25,12 @@ class TlsInline(admin.StackedInline):
         return formset
 
 
+class TrafficInline(admin.StackedInline):
+    model = models.Traffic
+    extra = 1
+    readonly_fields = ('traffic_usage', 'download', 'upload')
+
+
 class TransportInline(admin.StackedInline):
     model = models.Transport
     extra = 0
@@ -32,8 +38,8 @@ class TransportInline(admin.StackedInline):
 
 @admin.register(models.Inbound)
 class InboundAdmin(admin.ModelAdmin):
-    inlines = (InboundUserInline, TlsInline, TransportInline)
-    readonly_fields = ('tag', 'subdomain_id')
+    inlines = (InboundUserInline, TlsInline, TransportInline, TrafficInline)
+    readonly_fields = ('tag',)
 
 
 @admin.register(models.InboundUser)
