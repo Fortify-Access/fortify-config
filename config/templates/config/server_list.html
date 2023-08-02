@@ -1,0 +1,43 @@
+{% extends "base/_base.html" %}
+
+{% block title %}Servers{% endblock %}
+
+{% block content %}
+<main>
+    <table>
+        <tr>
+            <th>Num.</th>
+            <th>Location</th>
+            <th>Host/IP</th>
+            <th>Parent Server</th>
+            <th>Domain</th>
+            <th>API Port</th>
+            <th>Status</th>
+        </tr>
+        {% for server in servers %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ server.location }}</td>
+            <td>{{ server.host }}</td>
+            <td>Itself is parent</td>
+            <td>{{ server.server_domain }}</td>
+            <td>Has not API</td>
+            <td>Unavailable</td>
+        </tr>
+
+        {% for subserver in server.subservers.all %}
+        <tr>
+            <td>-</td>
+            <td>{{ subserver.location }}</td>
+            <td>{{ subserver.host }}</td>
+            <td>{{ subserver.parent_server.host }}</td>
+            <td>Has not a domain</td>
+            <td>{{ subserver.api_port }}</td>
+            <td><a href="">{{ subserver.get_status_display }}</a></td>
+        </tr>
+        {% endfor %}
+
+        {% endfor %}
+    </table>
+</main>
+{% endblock %}

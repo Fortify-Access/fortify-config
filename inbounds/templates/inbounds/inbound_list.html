@@ -1,0 +1,36 @@
+{% extends "base/_base.html" %}
+
+{% block title %}Inbounds{% endblock %}
+
+{% block content %}
+<main>
+    <table>
+        <tr>
+            <th>Num.</th>
+            <th>Tag</th>
+            <th>Server</th>
+            <th>Port</th>
+            <th>IP Limit</th>
+            <th>Traffic Limit (GB)</th>
+            <th>Create Date</th>
+            <th>Expire Date</th>
+            <th>Online Clients</th>
+            <th>Status</th>
+        </tr>
+        {% for inbound in inbounds %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ inbound.tag }}</td>
+            <td>{{ inbound.server.host }}</td>
+            <td>{{ inbound.listen_port }}</td>
+            <td>{{ inbound.ip_limitation }}</td>
+            <td>{% if inbound.traffic.allowed_traffic %}{{ inbound.traffic.allowed_traffic }}{% else %}Unlimited{% endif %}</td>
+            <td>{{ inbound.creation_date }}</td>
+            <td>{% if inbound.expiration_date %}{{ inbound.expiration_date }}{% else %}Unlimited{% endif %}</td>
+            <td>{{ inbound.online_clients_count }}</td>
+            <td><a href="{% url 'inbounds:inbound_detail' inbound.pk %}">{{ inbound.get_status_display }}</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</main>
+{% endblock %}

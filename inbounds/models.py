@@ -48,6 +48,10 @@ class Inbound(models.Model):
     def to_dict(self):
         return functions.inbound_to_dict(self)
 
+    @property
+    def online_clients_count(self):
+        return self.connections.filter(is_online=True).count()
+
 
 class Tls(models.Model):
     class Type(models.TextChoices):
@@ -86,12 +90,12 @@ class Tls(models.Model):
     public_key = models.CharField(max_length=64, unique=True)
     short_id = models.CharField(max_length=64, unique=True)
 
-    class Meta:
-        constraints = (
-            models.CheckConstraint(
-                check=~models.Q(certificate__isnull=False, certificate_path__isnull=False) & ~models.Q(key__isnull=False, key_path__isnull=False),
-                name="validate_key_and_certificate"),
-        )
+    # class Meta:
+    #     constraints = (
+    #         models.CheckConstraint(
+    #             check=~models.Q(certificate__isnull=False, certificate_path__isnull=False) & ~models.Q(key__isnull=False, key_path__isnull=False),
+    #             name="validate_key_and_certificate"),
+    #     )
 
 
 class Transport(models.Model):
@@ -148,19 +152,19 @@ class InboundUser(models.Model):
 
 
 class Traffic(models.Model):
-    inbound = models.OneToOneField(Inbound, models.CASCADE, related_name='traffic', null=True, blank=True)
-    allowed_traffic = models.BigIntegerField(null=True, blank=True)
+    inbound = models.OneToOneField(Inbound, models.CASCADE, related_name='traffic')
+    allowed_traffic = models.BigIntegerField(null=True, blank=True, help_text='Giga Bytes')
     traffic_usage = models.BigIntegerField(default=0)
     download = models.BigIntegerField(default=0)
     upload = models.BigIntegerField(default=0)
 
-    class Meta:
-        constraints = (
-            models.CheckConstraint(
-                check=~models.Q(inbound__isnull=True, user__isnull=True) & ~models.Q(inbound__isnull=False, user__isnull=False),
-                name='validate_traffic_parent_model'
-            ),
-        )
+    # class Meta:
+    #     constraints = (
+    #         models.CheckConstraint(
+    #             check=~models.Q(inbound__isnull=True, user__isnull=True) & ~models.Q(inbound__isnull=False, user__isnull=False),
+    #             name='validate_traffic_parent_model'
+    #         ),
+    #     )
 
 class ConnectionLog(models.Model):
     inbound = models.ForeignKey(Inbound, models.CASCADE, 'connections')

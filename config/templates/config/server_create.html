@@ -1,0 +1,13 @@
+{% extends "base/_base.html" %}
+
+{% block title %}Inbounds{% endblock %}
+
+{% block content %}
+<main>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit</button>
+    </form>
+</main>
+{% endblock %}

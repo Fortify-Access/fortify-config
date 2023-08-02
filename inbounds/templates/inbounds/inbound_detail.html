@@ -1,0 +1,69 @@
+{% extends "base/_base.html" %}
+
+{% block title %}Inbounds{% endblock %}
+
+{% block content %}
+<main>
+    <table>
+        <tr>
+            <th>Field</th>
+            <th>Value</th>
+        </tr>
+
+        <tr>
+            <td>Server</td>
+            <td>{{ inbound.server.host }}</td>
+        </tr>
+
+        <tr>
+            <td>Port</td>
+            <td>{{ inbound.listen_port }}</td>
+        </tr>
+
+        <tr>
+            <td>Tag</td>
+            <td>{{ inbound.tag }}</td>
+        </tr>
+
+        <tr>
+            <td>Type</td>
+            <td>{{ inbound.type }}</td>
+        </tr>
+
+        <tr>
+            <td>Tls Type</td>
+            <td>{{ inbound.tls.get_type_display }}</td>
+        </tr>
+
+        <tr>
+            <td>IP Limitation</td>
+            <td>{{ inbound.ip_limitation }}</td>
+        </tr>
+
+        <tr>
+            <td>Creation Date</td>
+            <td>{{ inbound.creation_date }}</td>
+        </tr>
+
+        <tr>
+            <td>Expiration Date</td>
+            <td>{{ inbound.expiration_date }}</td>
+        </tr>
+
+        <tr>
+            <td>Traffic Usage</td>
+            <td>{{ inbound.traffic.traffic_usage }} GB</td>
+        </tr>
+
+        <tr>
+            <td>Online Clients</td>
+            <td>{{ inbound.online_clients_count }}</td>
+        </tr>
+
+        <tr>
+            <td>User UUID</td>
+            <td>{{ inbound.users.0.uuid }}</td>
+        </tr>
+    </table>
+</main>
+{% endblock %}

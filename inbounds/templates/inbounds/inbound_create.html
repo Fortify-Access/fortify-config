@@ -1,0 +1,15 @@
+{% extends "base/_base.html" %}
+
+{% block title %}Inbounds{% endblock %}
+
+{% block content %}
+<main>
+    <form method="post">
+        {{ form.as_p }}
+        {{ tls_form.as_p }}
+        {{ user_form.as_p }}
+        {{ traffic_form.as_p }}
+        <button type="submit">Submit</button>
+    </form>
+</main>
+{% endblock %}
