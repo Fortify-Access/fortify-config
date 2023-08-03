@@ -10,19 +10,27 @@ from config.models import Log
 @receiver(post_save, sender=models.Inbound)
 def push_inbound_to_subservers(sender, instance, created, **kwargs):
     def push(server, created: bool):
-        headers = {'Authorization': f'Bearer {server.auth_key}'}
-        url = f"http://{server.host}:{server.api_port}/inbound/{'create' if created else 'update?tag=' + instance.tag}"
-        response = requests.post(url, headers=headers, data=json.dumps(functions.inbound_to_json(instance)))
-        print(functions.inbound_to_json(instance))
+        try:
+            headers = {'Authorization': f'Bearer {server.auth_key}'}
+            url = f"http://{server.host}:{server.api_port}/inbound/{'create' if created else 'update?tag=' + instance.tag}"
+            response = requests.post(url, headers=headers, data=json.dumps(functions.inbound_to_json(instance)))
+            print(functions.inbound_to_json(instance))
 
-        if not response.json()['success']:
-            Log.objects.create(inbound=instance, type=Log.Type.ERROR, log_message=response.json()['error'])
-            instance.status = 4
-            instance.save()
+            if response.json()['success']:
+                return
+            error_msg = response.json()['error']
+
+        except Exception as e:
+            error_msg = str(e)
+
+        Log.objects.create(inbound=instance, type=Log.Type.ERROR, log_message=error_msg)
+        instance.status = 4
+        instance.save()
 
     if created:
         if instance.server.subservers.exists():
             for subserver in instance.server.subservers.all():
+                print(subserver.host)
                 push(subserver, True)
             return
         push(instance.server, True)
@@ -37,20 +45,27 @@ def push_inbound_to_subservers(sender, instance, created, **kwargs):
 @receiver(post_delete, sender=models.Inbound)
 def delete_inbound_from_singbox(sender, instance, **kwargs):
     def push(server):
-        headers = {'Authorization': f'Bearer {server.auth_key}'}
-        url = f"http://{server.host}:{server.api_port}/inbound/delete?tag={instance.tag}"
-        response = requests.post(url, headers=headers)
+        try:
+            headers = {'Authorization': f'Bearer {server.auth_key}'}
+            url = f"http://{server.host}:{server.api_port}/inbound/delete?tag={instance.tag}"
+            response = requests.post(url, headers=headers)
 
-        if not response.json()['success']:
-            Log.objects.create(inbound=instance, type=Log.Type.ERROR, log_message=response.json()['error'])
-            instance.status = 4
-            instance.save()
+            if response.json()['success']:
+                return
+            error_msg = response.json()['error']
 
-        if instance.server.subservers.exists():
-            for subserver in instance.server.subservers.all():
-                push(subserver, True)
-            return
-        push(instance.server, True)
+        except Exception as e:
+            error_msg = str(e)
+
+        Log.objects.create(inbound=instance, type=Log.Type.ERROR, log_message=error_msg)
+        instance.status = 4
+        instance.save()
+
+    if instance.server.subservers.exists():
+        for subserver in instance.server.subservers.all():
+            push(subserver, True)
+        return
+    push(instance.server, True)
 
 
 # @receiver(post_save, sender=models.InboundUser)
