@@ -1,5 +1,5 @@
 from django.db import models
-from django.utils.crypto import get_random_string
+from django.core.exceptions import ValidationError
 import requests
 import json
 from config import models as config_models
@@ -26,7 +26,7 @@ class Inbound(models.Model):
 
     server = models.ForeignKey('config.Server', models.CASCADE, 'inbounds')
     type = models.CharField(max_length=5, choices=Type.choices)
-    tag = models.CharField(max_length=8, default=get_random_string(8))
+    tag = models.CharField(max_length=8)
     listen = models.CharField(max_length=36, default='::')
     listen_port = models.IntegerField(unique=True)
     tcp_fast_open = models.BooleanField()
@@ -55,7 +55,7 @@ class Inbound(models.Model):
     def online_clients_count(self):
         return self.connections.filter(is_online=True).count()
 
-    def _push(self, server, action):
+    def _push_request(self, server, action):
         try:
             headers = {'Authorization': f'Bearer {server.auth_key}'}
             if action in ['created', 'modified']:
@@ -71,6 +71,7 @@ class Inbound(models.Model):
             error_msg = response.json()['error']
 
         except Exception as e:
+            raise e
             error_msg = str(e)
 
         config_models.Log.objects.create(inbound=self, type=config_models.Log.Type.ERROR, log_message=error_msg)
@@ -78,22 +79,28 @@ class Inbound(models.Model):
         self.save()
         return
 
-    def save(self, created=True):
-        super().save()
+    def push(self, created=True, *args, **kwargs):
+        super(Inbound, self).save(*args, **kwargs)
+        print(created)
         if self.server.subservers.exists():
             for subserver in self.server.subservers.all():
                 print(subserver.host)
-                self._push(subserver, 'created' if created else 'modified')
+                self._push_request(subserver, 'created' if created else 'modified')
             return
-        self._push(self.server, created)
+        self._push_request(self.server, created)
 
     def delete(self):
         super().delete()
         if self.server.subservers.exists():
             for subserver in self.server.subservers.all():
-                self._push(subserver, 'deleted')
+                self._push_request(subserver, 'deleted')
             return
-        self._push(self.server, 'deleted')
+        self._push_request(self.server, 'deleted')
+
+    def clean(self):
+        super(Inbound, self).clean()
+        if Inbound.objects.filter(server=self.server, listen_port=self.listen_port).exists():
+            return ValidationError({'listen_port': 'This port is already exists among the inbounds of their server with your selected server. Please choose another port'})
 
 
 class Tls(models.Model):
@@ -171,8 +178,8 @@ class InboundUser(models.Model):
     class Flow(models.TextChoices):
         XRV = 'xtls-rprx-vision', 'xtls-rprx-vision'
 
-    inbound = models.ForeignKey(Inbound, models.CASCADE, 'users')
-    name = models.CharField(max_length=64, null=True, blank=True, default=get_random_string(6))
+    inbound = models.OneToOneField(Inbound, models.CASCADE, related_name='user')
+    name = models.CharField(max_length=10, null=True, blank=True)
     uuid = models.CharField(max_length=64, unique=True)
     flow = models.CharField(max_length=16, choices=Flow.choices, null=True, blank=True)
 
