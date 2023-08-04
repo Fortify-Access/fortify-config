@@ -1,5 +1,8 @@
 from django.db import models
 from django.utils.crypto import get_random_string
+import requests
+import json
+from config import models as config_models
 from . import functions
 
 # Create your models here.
@@ -47,6 +50,46 @@ class Inbound(models.Model):
 
     def to_dict(self):
         return functions.inbound_to_dict(self)
+
+    def _push(self, server, action):
+        try:
+            headers = {'Authorization': f'Bearer {server.auth_key}'}
+            if action in ['created', 'modified']:
+                url = f"http://{server.host}:{server.api_port}/inbound/{'create' if action == 'created' else 'update?tag=' + instance.tag}"
+                print(functions.inbound_to_json(self))
+                response = requests.post(url, headers=headers, data=json.dumps(functions.inbound_to_json(self)))
+            else:
+                url = f"http://{server.host}:{server.api_port}/inbound/delete?tag={self.tag}"
+                response = requests.post(url, headers=headers)
+
+            if response.json()['success']:
+                return
+            error_msg = response.json()['error']
+
+        except Exception as e:
+            error_msg = str(e)
+
+        config_models.Log.objects.create(inbound=self, type=config_models.Log.Type.ERROR, log_message=error_msg)
+        self.status = 4
+        self.save()
+        return
+
+    def save(self, created=True):
+        super().save()
+        if self.server.subservers.exists():
+            for subserver in self.server.subservers.all():
+                print(subserver.host)
+                self._push(subserver, 'created' if created else 'modified')
+            return
+        self._push(self.server, created)
+
+    def delete(self):
+        super().delete()
+        if self.server.subservers.exists():
+            for subserver in self.server.subservers.all():
+                self._push(subserver, 'deleted')
+            return
+        self._push(self.server, 'deleted')
 
 
 class Tls(models.Model):
