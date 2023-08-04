@@ -62,8 +62,24 @@
 
         <tr>
             <td>User UUID</td>
-            <td>{{ inbound.users.0.uuid }}</td>
+            <td>{{ inbound.user.uuid }}</td>
+        </tr>
+
+        <tr>
+            <td>Private Key</td>
+            <td>{{ inbound.tls.private_key }}</td>
+        </tr>
+
+        <tr>
+            <td>Public Key</td>
+            <td>{{ inbound.tls.public_key }}</td>
+        </tr>
+
+        <tr>
+            <td>Code</td>
+            <td>{{ inbound.user.connection_code }}</td>
         </tr>
     </table>
+    <a href={% url 'inbounds:inbound_errors' inbound.pk %}>See inbound errors</a>
 </main>
 {% endblock %}

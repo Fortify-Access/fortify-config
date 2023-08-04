@@ -5,6 +5,7 @@
 {% block content %}
 <main>
     <form method="post">
+        {% csrf_token %}
         {{ form.as_p }}
         {{ tls_form.as_p }}
         {{ user_form.as_p }}
