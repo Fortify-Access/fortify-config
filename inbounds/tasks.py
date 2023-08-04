@@ -1,11 +1,10 @@
-from celery import shared_task
 import requests
 from inbounds import models as inbound_models
 from config import models as config_models
-from . import functions
+from core.celery import app
 
-@shared_task
-def update_inbounds():
+@app.task(name='inbounds_updater')
+def inbounds_updater():
     for server in config_models.Server.objects.filter(subserver__isnull=False):
         subserver = server.subservers.first()
         headers = {'Authorization': f'Bearer {subserver.auth_key}'}
@@ -30,26 +29,26 @@ def update_inbounds():
 
             inbound_models.Traffic.objects.bulk_update(updated_traffics, fields=('upload', 'download', 'traffic_usage'))
 
-@shared_task
-def push_to_server(inbound, server, action):
-    try:
-        headers = {'Authorization': f'Bearer {server.auth_key}'}
-        if action in ['created', 'modified']:
-            url = f"http://{server.host}:{server.api_port}/inbound/{'create' if action == 'created' else 'update?tag=' + instance.tag}"
-            print(functions.inbound_to_json(inbound))
-            response = requests.post(url, headers=headers, data=functions.inbound_to_json(inbound))
-        else:
-            url = f"http://{server.host}:{server.api_port}/inbound/delete?tag={inbound.tag}"
-            response = requests.post(url, headers=headers)
-
-        if response.json()['success']:
-            return
-        error_msg = response.json()['error']
-
-    except Exception as e:
-        error_msg = str(e)
-
-    config_models.Log.objects.create(inbound=inbound, type=config_models.Log.Type.ERROR, log_message=error_msg)
-    inbound.status = 4
-    inbound.save()
-    return
+# @shared_task
+# def push_to_server(inbound, server, action):
+#     try:
+#         headers = {'Authorization': f'Bearer {server.auth_key}'}
+#         if action in ['created', 'modified']:
+#             url = f"http://{server.host}:{server.api_port}/inbound/{'create' if action == 'created' else 'update?tag=' + instance.tag}"
+#             print(functions.inbound_to_json(inbound))
+#             response = requests.post(url, headers=headers, data=functions.inbound_to_json(inbound))
+#         else:
+#             url = f"http://{server.host}:{server.api_port}/inbound/delete?tag={inbound.tag}"
+#             response = requests.post(url, headers=headers)
+# 
+#         if response.json()['success']:
+#             return
+#         error_msg = response.json()['error']
+# 
+#     except Exception as e:
+#         error_msg = str(e)
+# 
+#     config_models.Log.objects.create(inbound=inbound, type=config_models.Log.Type.ERROR, log_message=error_msg)
+#     inbound.status = 4
+#     inbound.save()
+#     return
