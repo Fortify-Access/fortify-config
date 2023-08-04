@@ -5,7 +5,7 @@ from inbounds import models as inbound_models
 # Register your models here.
 class InboundInline(admin.TabularInline):
     model = inbound_models.Inbound
-    extra = 1
+    extra = 0
 
 
 @admin.register(config_models.Server)

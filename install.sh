@@ -8,17 +8,15 @@ install_project() {
   git clone https://github.com/Fortify-Access/fortify-config.git fortify
   cd fortify
 
-  if [[ "$(uname)" == "Linux" ]]; then
-    if [[ -x "$(command -v apt)" ]]; then
-      apt install -y python3.10-venv
-    elif [[ -x "$(command -v yum)" ]]; then
-      yum install -y python3.10-venv
-    else
-      echo "Unsupported package manager."
-      exit 1
-    fi
+  # Detect the python version that is installed in server
+  python_version=$(python3 -c 'import sys; version=sys.version_info[:2]; print("{0}.{1}".format(*version))')
+
+  if [[ -x "$(command -v apt)" ]]; then
+    apt install -y python$python_version-venv
+  elif [[ -x "$(command -v yum)" ]]; then
+    yum install -y python$python_version-venv
   else
-    echo "Unsupported operating system."
+    echo "Unsupported package manager."
     exit 1
   fi
 
@@ -46,47 +44,30 @@ install_project() {
   systemctl start singbox.service
 
   # Step 9: Downlaod and extract sing-box binary
-  echo "Step 9: Downloading sing-box..."
+  echo "Step 4: Downloading sing-box..."
   if [[ "$(uname -m)" == "x86_64" ]]; then
       package_url="https://github.com/SagerNet/sing-box/releases/download/v1.3.0/sing-box-1.3.0-linux-amd64.tar.gz"
+      package_name="sing-box-1.3.0-linux-amd64"
   elif [[ "$(uname -m)" == "aarch64" ]]; then
       package_url="https://github.com/SagerNet/sing-box/releases/download/v1.3.0/sing-box-1.3.0-linux-arm64.tar.gz"
+      package_name="sing-box-1.3.0-linux-arm64"
   else
       echo "Unsupported system architecture."
       exit 1
   fi
 
-  # Fetch the latest (including pre-releases) release version number from GitHub API
-  latest_version=$(curl -s "https://api.github.com/repos/SagerNet/sing-box/releases" | jq -r '.[0].name')
-  
-  # Detect server architecture
-  arch=$(uname -m)
-  
-  # Map architecture names
-  case ${arch} in
-      x86_64)
-          arch="amd64"
-          ;;
-      aarch64)
-          arch="arm64"
-          ;;
-      armv7l)
-          arch="armv7"
-          ;;
-  esac
-  
-  # Prepare package names
-  package_name="sing-box-${latest_version}-linux-${arch}"
+  # Step 7: Prepare package names
+  echo "Step 7: Prepare package names..."
   # Download the latest release package (.tar.gz) from GitHub
-  curl -sLo "/opt/fortify/${package_name}.tar.gz" "https://github.com/SagerNet/sing-box/releases/download/v${latest_version}/${package_name}.tar.gz"
+  curl -sLo "/opt/fortify-config/${package_name}.tar.gz" $package_url
   # Extract the package and move the binary to /root
-  tar -xzf "/opt/fortify/${package_name}.tar.gz" -C /opt/fortify
-  # Renaming the sing-box directory
-  mv "/opt/fortify/${package_name}" "/opt/fortify/sing-box"
+  tar -xzf "/opt/fortify-config/${package_name}.tar.gz" -C /opt/fortify-config
+  # Change the singbox long directory name
+  mv "/opt/fortify-config/${package_name}" "/opt/fortify-config/sing-box"
   # Cleanup the package
-  rm -r "/opt/fortify/${package_name}.tar.gz"
+  rm -r "/opt/fortify-config/${package_name}.tar.gz"
   # Copy the default sing-box configuration file
-  cp /opt/fortify/services/default_config.json /opt/fortify/sing-box/config.json
+  cp /opt/fortify-config/services/default_config.json /opt/fortify-server/sing-box/config.json
 }
 
 # Step 9: Initialize the project
