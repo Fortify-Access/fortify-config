@@ -18,7 +18,9 @@ def get_short_id():
 
 def inbound_to_json(inbound):
     return {
-        "inbound": model_to_dict(inbound, exclude=('id', 'server', 'status', 'creation_date')) | {'traffic_limitation': inbound.traffic.allowed_traffic},
+        "inbound": model_to_dict(inbound, exclude=('id', 'server', 'status', 'creation_date')) | {
+            'traffic_limitation': inbound.traffic.allowed_traffic, 'is_active': True if inbound.status == 1 else False},
+
         "users": [model_to_dict(inbound.user, fields=('name', 'uuid', 'flow'))],
         "tls": None if not hasattr(inbound, 'tls') else model_to_dict(inbound.tls, fields=(
             'type', 'server_name', 'handshake_server', 'handshake_port', 'private_key', 'short_id')),
@@ -26,7 +28,6 @@ def inbound_to_json(inbound):
     }
 
 def generate_qr_code(data: str, path):
-    print(type(path))
     qr = qrcode.QRCode(version=1, box_size=10, border=3)
     qr.add_data(data)
     qr.make(fit=True)
