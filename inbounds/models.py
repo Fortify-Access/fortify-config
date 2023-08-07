@@ -1,5 +1,4 @@
 from django.db import models
-from django.core.exceptions import ValidationError
 import requests
 import json
 from config import models as config_models
@@ -28,7 +27,7 @@ class Inbound(models.Model):
     type = models.CharField(max_length=5, choices=Type.choices)
     tag = models.CharField(max_length=8)
     listen = models.CharField(max_length=36, default='::')
-    listen_port = models.IntegerField(unique=True)
+    listen_port = models.IntegerField()
     tcp_fast_open = models.BooleanField()
     udp_fragment = models.BooleanField()
     sniff = models.BooleanField()
@@ -80,7 +79,6 @@ class Inbound(models.Model):
         return
 
     def push(self, created=True, *args, **kwargs):
-        super(Inbound, self).save(*args, **kwargs)
         print(created)
         if self.server.subservers.exists():
             for subserver in self.server.subservers.all():
@@ -97,10 +95,13 @@ class Inbound(models.Model):
             return
         self._push_request(self.server, 'deleted')
 
-    def clean(self):
-        super(Inbound, self).clean()
-        if Inbound.objects.filter(server=self.server, listen_port=self.listen_port).exists():
-            return ValidationError({'listen_port': 'This port is already exists among the inbounds of their server with your selected server. Please choose another port'})
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=('server', 'listen_port'), name='unique_listen_port_based_on_server',
+                violation_error_message='This port is already exists among the inbounds of their server with your selected server. Please choose another port'
+            ),
+        )
 
 
 class Tls(models.Model):
@@ -114,7 +115,7 @@ class Tls(models.Model):
         V1_3 = '1.3', 'Version 1.3'
 
     class uTLS(models.TextChoices):
-        CHROME = 'chorme', 'Chrome'
+        CHROME = 'chrome', 'Chrome'
         EDGE = 'edge', 'Edge'
         FIREFOX = 'firefox', 'Fire Fox'
         SAFARI = 'safari', 'Safari'
@@ -188,7 +189,7 @@ class InboundUser(models.Model):
 
     @property
     def connection_code(self):
-        code_pattern = f"{self.inbound.type}://{self.uuid}@\{self.inbound.server.server_domain or self.server.host}:\{self.inbound.listen_port}?encryption=none&flow={self.flow}&" 
+        code_pattern = f"{self.inbound.type}://{self.uuid}@\{self.inbound.server.server_domain or self.inbound.server.host}:\{self.inbound.listen_port}?encryption=none&flow={self.flow}&" 
 
         if self.inbound.type == 'vmess':
             return code_pattern + f"security=none&type=http&headerType=none#{self.inbound.tag}"
@@ -207,6 +208,12 @@ class Traffic(models.Model):
     traffic_usage = models.BigIntegerField(default=0)
     download = models.BigIntegerField(default=0)
     upload = models.BigIntegerField(default=0)
+
+    @property
+    def reformat_traffic_usage(self):
+        usage = int(self.traffic_usage / 1000000)
+        unit, usage = 'GB' if usage > 1000 else 'MB', usage if usage < 1000 else usage / 1000
+        return unit, usage
 
     # class Meta:
     #     constraints = (
