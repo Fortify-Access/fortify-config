@@ -1,0 +1,13 @@
+[Unit]
+Description=Celery service
+Documentation=https://docs.celeryq.dev/en/stable/userguide
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/fortify-server/
+ExecStart=/bin/sh -c '/opt/fortify-server/venv/bin/celery -A core worker\
+    --logfile=/var/log/celery/worker.log --loglevel=info'
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

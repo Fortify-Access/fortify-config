@@ -1,0 +1,13 @@
+[Unit]
+Description=Celery beat service
+Documentation=https://docs.celeryq.dev/en/stable/userguide
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/fortify-server/
+ExecStart=/bin/sh -c '/opt/fortify-server/venv/bin/celery -A core beat\
+    --logfile=/var/log/celery/beat.log --loglevel=info'
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
