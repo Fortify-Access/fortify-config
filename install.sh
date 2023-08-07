@@ -36,38 +36,6 @@ install_project() {
   cp /opt/fortify/services/fortify.service /etc/systemd/system/
   systemctl enable fortify.service
   systemctl start fortify.service
-
-  # Step 8: Configure and start sing-box service
-  echo "Step 8: Configuring and starting sing-box service..."
-  cp /opt/fortify/services/singbox.service /etc/systemd/system/
-  systemctl enable singbox.service
-  systemctl start singbox.service
-
-  # Step 9: Downlaod and extract sing-box binary
-  echo "Step 4: Downloading sing-box..."
-  if [[ "$(uname -m)" == "x86_64" ]]; then
-      package_url="https://github.com/SagerNet/sing-box/releases/download/v1.3.0/sing-box-1.3.0-linux-amd64.tar.gz"
-      package_name="sing-box-1.3.0-linux-amd64"
-  elif [[ "$(uname -m)" == "aarch64" ]]; then
-      package_url="https://github.com/SagerNet/sing-box/releases/download/v1.3.0/sing-box-1.3.0-linux-arm64.tar.gz"
-      package_name="sing-box-1.3.0-linux-arm64"
-  else
-      echo "Unsupported system architecture."
-      exit 1
-  fi
-
-  # Step 7: Prepare package names
-  echo "Step 7: Prepare package names..."
-  # Download the latest release package (.tar.gz) from GitHub
-  curl -sLo "/opt/fortify-config/${package_name}.tar.gz" $package_url
-  # Extract the package and move the binary to /root
-  tar -xzf "/opt/fortify-config/${package_name}.tar.gz" -C /opt/fortify-config
-  # Change the singbox long directory name
-  mv "/opt/fortify-config/${package_name}" "/opt/fortify-config/sing-box"
-  # Cleanup the package
-  rm -r "/opt/fortify-config/${package_name}.tar.gz"
-  # Copy the default sing-box configuration file
-  cp /opt/fortify-config/services/default_config.json /opt/fortify-server/sing-box/config.json
 }
 
 # Step 9: Initialize the project
