@@ -27,7 +27,7 @@ install_project() {
 
   # Step 6: Run migrations and create superuser
   echo "Step 6: Running migrations and creating superuser..."
-  python manage.py makemigrations
+  python manage.py makemigrations config inbounds
   python manage.py migrate
   python manage.py createsuperuser
 
