@@ -1,22 +1,15 @@
-from django.db.models.signals import post_save
+import subprocess
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from . import models
-from . import functions
 
-
-@receiver(post_save, sender=models.Server)
-def initial_server(sender, instance, created, **kwargs):
-    if created:
-        if hasattr(instance, 'dns') and not instance.parent_server:
-            original_domain_id, log_message = functions.create_a_dns_record(instance.host, instance.dns)
-            if not original_domain_id:
-                instance.status = models.Server.Status.ERROR
-                instance.save()
-                models.Log.objects.create(server=instance, type=models.Log.Type.ERROR, log_message=log_message)
-                return
-            instance.dns.original_domain_id = original_domain_id
-            instance.dns.save()
-
-        if not instance.is_local_server:
-            pass
-
+# 
+# @receiver(post_save, sender=models.Server)
+# def run_redis_docker_container_for_server(sender, instance, created, **kwargs):
+#     if created:
+#         subprocess.check_output(['docker', 'run', '--name', instance.host, '-p', f'{instance.redis_port}:6379', '-d', 'redis'])
+# 
+# 
+# @receiver(post_delete, sender=models.Server)
+# def delete_redis_docker_container_of_server(sender, instance, **kwargs):
+#     subprocess.check_output(['docker', 'rm', '-f', instance.host])

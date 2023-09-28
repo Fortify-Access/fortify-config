@@ -22,6 +22,7 @@ def inbounds_updater():
                     inbound.traffic.upload = inbound_json['upload']
                     inbound.traffic.download = inbound_json['download']
                     inbound.traffic.traffic_usage = inbound_json['traffic_usage']
+                    print(inbound.traffic.traffic_usage)
                     updated_traffics.append(inbound.traffic)
 
                     for client_ip in inbound_json['online_clients']:
@@ -41,6 +42,7 @@ def inbounds_updater():
             error_msg = response_json['error']
 
         except Exception as e:
+            raise e
             error_msg = str(e)
 
         config_models.Log.objects.create(server=server, type=config_models.Log.Type.ERROR, log_message=error_msg)
