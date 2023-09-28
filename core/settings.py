@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # third-party
-    # 'django_celery_beat',
+    'django_celery_beat',
     # apps
     'config',
     'inbounds',

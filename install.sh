@@ -39,16 +39,9 @@ install_project() {
 
   # Step 8: Docker installation for
   echo "Step 8: Docker installation..."
-  sudo apt-get install -y \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    software-properties-common curl -fsSL https://yum.dockerproject.org/gpg | sudo apt-key add - sudo add-apt-repository \
-    "deb https://apt.dockerproject.org/repo/ \
-    ubuntu-$(lsb_release -cs) \
-    main" sudo apt-get update
-  sudo apt-get -y install docker-engine  
-  sudo usermod -aG docker $(whoami)
+  apt install docker.io
+  systemctl start docker
+  systemctl enable docker
   docker run --name celery_db -p 5080:6379 -d redis
 
   # Step 9: Configure and start Django celery service
@@ -59,9 +52,25 @@ install_project() {
   systemctl start celery.service
   systemctl enable celerybeat.service
   systemctl start celerybeat.service
+
+  # Step 10: Downloading singbox
+  if [[ "$(uname -m)" == "x86_64" ]]; then
+      package_url="https://github.com/SagerNet/sing-box/releases/download/v1.3.0/sing-box-1.3.0-linux-amd64.tar.gz"
+      package_name="sing-box-1.3.0-linux-amd64"
+  elif [[ "$(uname -m)" == "aarch64" ]]; then
+      package_url="https://github.com/SagerNet/sing-box/releases/download/v1.3.0/sing-box-1.3.0-linux-arm64.tar.gz"
+      package_name="sing-box-1.3.0-linux-arm64"
+  else
+      echo "Unsupported system architecture."
+      exit 1
+  fi
+  curl -sLo "/opt/fortify-server/${package_name}.tar.gz" $package_url
+  tar -xzf "/opt/fortify-server/${package_name}.tar.gz" -C /opt/fortify-server
+  mv "/opt/fortify-server/${package_name}" "/opt/fortify-server/sing-box"
+  rm -r "/opt/fortify-server/${package_name}.tar.gz"
 }
 
-# Step 10: Initialize the project
+# Step 11: Initialize the project
 install_project
 server_ip=$(curl -s https://api.ipify.org)
 echo "Step 10: Initializing the project..."
