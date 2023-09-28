@@ -14,6 +14,6 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR("This project already initialized!"))
             return
 
-        Server.objects.create(host=options['ip'], is_local_server=True)
+        Server.objects.create(host=options['ip'], redis_port=5080, is_local_server=True)
 
         self.stdout.write(self.style.SUCCESS('Project successfully initialized.'))
