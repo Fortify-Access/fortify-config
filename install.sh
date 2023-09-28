@@ -36,6 +36,15 @@ install_project() {
   cp /opt/fortify/services/fortify.service /etc/systemd/system/
   systemctl enable fortify.service
   systemctl start fortify.service
+
+  # Step 8: Configure and start Django celery service
+  echo "Step 7: Configuring and starting Django celery service..."
+  cp /opt/fortify/services/celery.service /etc/systemd/system/
+  cp /opt/fortify/services/celerybeat.service /etc/systemd/system/
+  systemctl enable celery.service
+  systemctl start celery.service
+  systemctl enable celerybeat.service
+  systemctl start celerybeat.service
 }
 
 # Step 9: Initialize the project
